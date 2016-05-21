@@ -44,13 +44,11 @@ u32 extdataRedirect(u32 low)
     //Fire Emblem Conquest + SE
     else if(low==0x00179600 || low==0x00179800)
         return 0x00001794;
-    else
-        return (low >> 8);
 
-    return 0;
+    return (low >> 8);
 }
 
-bool titleData::init(u64 _id, u8 mediaType)
+bool titleData::init(u64 _id, FS_MediaType mediaType)
 {
     id = _id;
     media = mediaType;

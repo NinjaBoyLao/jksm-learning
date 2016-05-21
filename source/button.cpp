@@ -6,10 +6,11 @@
 #include "global.h"
 #include "button.h"
 #include "img.h"
+#include "util.h"
 
 using namespace std;
 
-button::button(const char *sText, int sX, int sY)
+button::button(const char * sText, int sX, int sY)
 {
     Box = new textbox(sX, sY, 96, 32, sText);
 
@@ -39,21 +40,26 @@ bool button::isOver(touchPosition p)
 }
 
 //Checks if the stylus was removed.
-//I need to redo this sometime though.
 bool button::released(touchPosition p)
 {
     Prev = p;
     if(isOver(p))
     {
         Pressed = true;
-        return false;
     }
     else
     {
-        if(Pressed)
+        //This should now only return true if
+        //the stylus is lifted directly off.
+        //should return false now if moved away to different part
+        if(Pressed && !touchPressed(p))
         {
             Pressed = false;
             return true;
+        }
+        else
+        {
+            Pressed = false;
         }
     }
     return false;

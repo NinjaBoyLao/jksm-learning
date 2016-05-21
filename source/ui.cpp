@@ -7,6 +7,7 @@
 #include "textbox.h"
 #include "button.h"
 #include "img.h"
+#include "global.h"
 
 bool confirm(const char *t)
 {
@@ -34,6 +35,8 @@ bool confirm(const char *t)
             ret = false;
             break;
         }
+
+        killApp(up);
 
         sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
             back.draw(false);
@@ -63,6 +66,8 @@ void showMessage(const char *t)
 
         if(ok.released(p) || (up & KEY_A) || (up & KEY_B))
             break;
+
+        killApp(up);
 
         sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
             back.draw(false);

@@ -18,10 +18,10 @@ bool openSaveArch(FS_Archive *out, const titleData dat, bool showError)
     //high id. this is usually 0x00040000
     path[2] = dat.high;
 
+    FS_Path binPath = {PATH_BINARY, 12, path};
+
     //setup archive info
-    Handle fs;
-    *out = (FS_Archive){ARCHIVE_USER_SAVEDATA, (FS_Path){PATH_BINARY, 12, path}};
-    Result res = FSUSER_OpenArchive(out);
+    Result res = FSUSER_OpenArchive(out, ARCHIVE_USER_SAVEDATA, binPath);
     if(res)
     {
         if(showError)
@@ -35,8 +35,7 @@ bool openSaveArch(FS_Archive *out, const titleData dat, bool showError)
 
 bool openCartArch(FS_Archive *out)
 {
-    *out = (FS_Archive){ARCHIVE_GAMECARD_SAVEDATA, (FS_Path){PATH_EMPTY, 0, ""}};
-    Result res = FSUSER_OpenArchive(out);
+    Result res = FSUSER_OpenArchive(out, ARCHIVE_GAMECARD_SAVEDATA, fsMakePath(PATH_EMPTY, ""));
     if(res)
     {
         return false;
@@ -52,8 +51,9 @@ bool openExtdata(FS_Archive *out, const titleData dat, bool showError)
     path[1] = dat.extdata;
     path[2] = 0;
 
-    *out = (FS_Archive){ARCHIVE_EXTDATA, (FS_Path){PATH_BINARY, 12, path}};
-    Result res = FSUSER_OpenArchive(out);
+    FS_Path binPath = {PATH_BINARY, 12, path};
+
+    Result res = FSUSER_OpenArchive(out, ARCHIVE_EXTDATA, binPath);
     if(res)
     {
         if(showError)
@@ -71,8 +71,9 @@ bool openSharedExt(FS_Archive *out, u32 id)
     path[1] = id;
     path[2] = 0x00048000;
 
-    *out = (FS_Archive){ARCHIVE_SHARED_EXTDATA, (FS_Path){PATH_BINARY, 12, path}};
-    Result res = FSUSER_OpenArchive(out);
+    FS_Path binPath = {PATH_BINARY, 12, path};
+
+    Result res = FSUSER_OpenArchive(out, ARCHIVE_SHARED_EXTDATA, binPath);
     if(res)
     {
         showMessage("Error opening Shared Extdata!");
@@ -90,8 +91,9 @@ bool openBossExt(FS_Archive *out, const titleData dat)
     path[1] = dat.extdata;
     path[2] = 0;
 
-    *out = (FS_Archive){ARCHIVE_BOSS_EXTDATA, (FS_Path){PATH_BINARY, 12, path}};
-    Result res = FSUSER_OpenArchive(out);
+    FS_Path binPath = {PATH_BINARY, 12, path};
+
+    Result res = FSUSER_OpenArchive(out, ARCHIVE_BOSS_EXTDATA, binPath);
     if(res)
     {
         showMessage("Error opening Boss Extdata! Title may not use it.");
@@ -107,8 +109,9 @@ bool openSysSave(FS_Archive *out, const titleData dat)
     path[0] = MEDIATYPE_NAND;
     path[1] = (0x00020000 | dat.unique);
 
-    *out = (FS_Archive){ARCHIVE_SYSTEM_SAVEDATA, (FS_Path){PATH_BINARY, 8, path}};
-    Result res = FSUSER_OpenArchive(out);
+    FS_Path binPath = {PATH_BINARY, 8, path};
+
+    Result res = FSUSER_OpenArchive(out, ARCHIVE_SYSTEM_SAVEDATA, binPath);
     if(res)
     {
         showMessage("Error opening system save data! Title may not use it.");

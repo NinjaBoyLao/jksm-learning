@@ -26,7 +26,7 @@ void nandStartSelect()
     std::u32string info = U"Select a title";
     bool loop = true;
 
-    while(loop)
+    while(loop && !kill)
     {
         hidScanInput();
 
@@ -40,6 +40,8 @@ void nandStartSelect()
         }
         else if(up & KEY_B)
             break;
+
+        killApp(up);
 
         sf2d_start_frame(GFX_TOP, GFX_LEFT);
             nandMenu.draw();
@@ -81,7 +83,7 @@ void nandBackup(const titleData dat)
     std::u32string info = tou32(dat.name);
     info += U" : NAND";
 
-    while(loop)
+    while(loop && !kill)
     {
         hidScanInput();
 
@@ -137,10 +139,12 @@ void nandBackup(const titleData dat)
                     loop = false;
                     break;
             }
-            FSUSER_CloseArchive(&arch);
+            FSUSER_CloseArchive(arch);
         }
         else if(up & KEY_B)
             break;
+
+        killApp(up);
 
         sf2d_start_frame(GFX_TOP, GFX_LEFT);
             drawTopBar(info);

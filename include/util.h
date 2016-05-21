@@ -4,6 +4,7 @@
 #include <string>
 
 #include "titledata.h"
+#include "dir.h"
 
 std::u32string tou32(const std::u16string t);
 std::u32string modeText(int mode);
@@ -14,12 +15,19 @@ void createTitleDir(const titleData t, int mode);
 void deleteSV(const titleData t);
 std::u16string getPath(int mode);
 
-//This detects if running under something as 3dsv
+void deleteExtdata(const titleData dat);
+
+//This detects if running under something as 3dsx
 bool runningUnder();
 
-//this is only used running under a title
-void fsStart();
+//returns if touchscreen is still being pressed anywhere
+bool touchPressed(touchPosition p);
 
-//same, only closing
-void fsEnd();
+//sleeps for x seconds
+void sleep(int s);
+
+//returns if dealing with extdata
+bool modeExtdata(int mode);
+
+bool fexists(const char *path);
 #endif // UTIL_G

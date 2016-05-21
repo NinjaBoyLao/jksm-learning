@@ -8,7 +8,7 @@
 class titleData
 {
     public:
-        bool init(u64 _id, u8 mediaType);
+        bool init(u64 _id, FS_MediaType mediaType);
         void initId();
 
         void printInfo();
@@ -17,7 +17,7 @@ class titleData
         u32 high, low, unique, extdata;
         std::string prodCode;
         std::u16string name, nameSafe;
-        u8 media;
+        FS_MediaType media;
 
     private:
         smdh_s *smdh;

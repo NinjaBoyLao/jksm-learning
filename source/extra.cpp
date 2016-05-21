@@ -45,7 +45,7 @@ void maxPlayCoins()
         delete[] buff;
 
         showMessage("Play coins set to 300!");
-        FSUSER_CloseArchive(&shared);
+        FSUSER_CloseArchive(shared);
     }
 }
 
@@ -75,7 +75,7 @@ void zeroPlayCoins()
 
         showMessage("Play coins set to 0.");
 
-        FSUSER_CloseArchive(&shared);
+        FSUSER_CloseArchive(shared);
     }
 }
 
@@ -121,6 +121,8 @@ void extrasMenu()
         }
         else if(up & KEY_B)
             break;
+
+        killApp(up);
 
         sf2d_start_frame(GFX_TOP, GFX_LEFT);
             drawTopBar(info);

@@ -33,7 +33,7 @@ void autoBackup(menu m)
             dumpCount++;
             dumped = true;
         }
-        FSUSER_CloseArchive(&saveArch);
+        FSUSER_CloseArchive(saveArch);
 
         FS_Archive extArch;
         if(m.optSelected(i) && openExtdata(&extArch, sdTitle[i], false))
@@ -45,10 +45,10 @@ void autoBackup(menu m)
             if(!dumped)
                 dumpCount++;
         }
-        FSUSER_CloseArchive(&extArch);
+        FSUSER_CloseArchive(extArch);
 
         sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
-            autoDump.draw(i);
+        autoDump.draw(i);
         sf2d_end_frame();
         sf2d_swapbuffers();
     }
@@ -64,11 +64,11 @@ void autoRestore(menu m)
         FS_Archive saveArch;
         if(m.optSelected(i) && openSaveArch(&saveArch, sdTitle[i], false))
             restoreData(sdTitle[i], saveArch, MODE_SAVE);
-        FSUSER_CloseArchive(&saveArch);
+        FSUSER_CloseArchive(saveArch);
 
         FS_Archive extArch;
         if(m.optSelected(i) && openExtdata(&extArch, sdTitle[i], false))
             restoreData(sdTitle[i], extArch, MODE_EXTDATA);
-        FSUSER_CloseArchive(&extArch);
+        FSUSER_CloseArchive(extArch);
     }
 }

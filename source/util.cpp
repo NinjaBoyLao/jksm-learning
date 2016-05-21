@@ -1,4 +1,5 @@
 #include <3ds.h>
+#include <stdio.h>
 #include <string>
 #include <string.h>
 
@@ -7,8 +8,8 @@
 #include "titledata.h"
 #include "dir.h"
 #include "ui.h"
-
-Handle fs;
+#include "smdh.h"
+#include "archive.h"
 
 std::u32string tou32(const std::u16string t)
 {
@@ -132,16 +133,52 @@ bool runningUnder()
     return true;
 }
 
-//Gets the handle of what it's running under and tries to use it
-//I haven't found a title that works yet. Maybe I'm doing this wrong?
-void fsStart()
+void deleteExtdata(const titleData dat)
 {
-   srvGetServiceHandleDirect(&fs, "fs:USER");
-   FSUSER_Initialize(fs);
-   fsUseSession(fs, false);
+    FS_ExtSaveDataInfo del;
+    del.mediaType = MEDIATYPE_SD;
+    del.saveId = dat.extdata;
+
+    Result res = FSUSER_DeleteExtSaveData(del);
+    if(res)
+    {
+        showMessage("Error deleting ExtData!");
+        logWriteError("ExtData Delete", res);
+    }
 }
 
-void fsEnd()
+//Just returns whether or not the touch screen is pressed anywhere.
+bool touchPressed(touchPosition p)
 {
-    fsEndUseSession();
+    //I don't think either of these are ever 0
+    //unless the screen isn't touched.
+    if(p.px>0 || p.py>0)
+        return true;
+
+    return false;
+}
+
+void sleep(int s)
+{
+    s64 time = s * 1000000000;
+    svcSleepThread(time);
+}
+
+bool modeExtdata(int mode)
+{
+    if(mode==MODE_EXTDATA || mode==MODE_BOSS || mode==MODE_SHARED)
+        return true;
+
+    return false;
+}
+
+bool fexists(const char *path)
+{
+    FILE *test = fopen(path, "r");
+    if(test==NULL)
+        return false;
+
+    fclose(test);
+
+    return true;
 }

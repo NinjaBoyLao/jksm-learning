@@ -13,21 +13,14 @@ smdh_s *loadSMDH(u32 Low, u32 High, u8 Media)
     //Pretty much stolen from hb_menu. It's the only thing I could find with how to open this.
     Handle FileHandle;
 
-    u32 ArchPath[] = {Low, High, Media, 0x0};
-    static const u32 FilePath[] = { 0x0, 0x0, 0x2, 0x6E6F6369, 0x0};
+    u32 archPath[] = {Low, High, Media, 0x0};
+    static const u32 filePath[] = { 0x0, 0x0, 0x2, 0x6E6F6369, 0x0};
     smdh_s *Ret = new smdh_s;
 
-    //Source formatter keeps eating these. I gave up.
-    FS_Archive Arch =
-    {
-        ARCHIVE_SAVEDATA_AND_CONTENT, (FS_Path)
-        {
-            PATH_BINARY, 0x10, (u8 *)ArchPath
-        }
-    };
-    FS_Path Path = {PATH_BINARY, 0x14, (u8 *)FilePath};
+    FS_Path binArchPath = {PATH_BINARY, 0x10, archPath};
+    FS_Path binFilePath = {PATH_BINARY, 0x14, filePath};
 
-    Result Res = FSUSER_OpenFileDirectly(&FileHandle, Arch, Path, FS_OPEN_READ, 0);
+    Result Res = FSUSER_OpenFileDirectly(&FileHandle, ARCHIVE_SAVEDATA_AND_CONTENT, binArchPath, binFilePath, FS_OPEN_READ, 0);
     if(Res == 0)
     {
         //For bytes read.

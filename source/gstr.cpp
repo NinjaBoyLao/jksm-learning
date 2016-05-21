@@ -18,8 +18,8 @@ std::string GetString()
 
     bool Loop = true;
 
-    std::u32string info = U"Enter a name. Press A or Start when finished.";
-    while(aptMainLoop() && Loop)
+    std::u32string info = U"Enter a name. Press A when finished.";
+    while(Loop && !kill)
     {
         hidScanInput();
 
@@ -44,9 +44,12 @@ std::string GetString()
             return "";//return nothing.
         }
 
+        killApp(KeyUp);
+
         sf2d_start_frame(GFX_TOP, GFX_LEFT);
             drawTopBar(info);
         sf2d_end_frame();
+
         sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
             Back.draw(false);
             sftd_draw_text(yashi, 32, 32, RGBA8(0, 0, 0, 255), 12, Str.RetString().c_str());

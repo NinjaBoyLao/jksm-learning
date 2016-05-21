@@ -57,7 +57,7 @@ void cartManager()
 
     //get cart's id
     u64 cartID;
-    AM_GetTitleIdList(MEDIATYPE_GAME_CARD, 1, &cartID);
+    AM_GetTitleList(NULL, MEDIATYPE_GAME_CARD, 1, &cartID);
 
     //use titledata to take care of everything
     titleData cartData;
@@ -83,7 +83,7 @@ void cartManager()
 
     bool loop = true;
 
-    while(loop)
+    while(loop && !kill)
     {
         hidScanInput();
 
@@ -135,10 +135,12 @@ void cartManager()
                     loop = false;
                     break;
             }
-            FSUSER_CloseArchive(&archive);
+            FSUSER_CloseArchive(archive);
         }
         else if(up & KEY_B)
             break;
+
+        killApp(up);
 
         sf2d_start_frame(GFX_TOP, GFX_LEFT);
             cartMenu.draw();

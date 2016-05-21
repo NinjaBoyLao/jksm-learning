@@ -38,28 +38,47 @@ void copyFileToSD(FS_Archive save, const std::u16string from, const std::u16stri
     u64 offset = 0;
 
     //buffer for data
-    u8 *buff = new u8[buff_size];
+    u8 * buff = new u8[buff_size];
 
     u64 fSize;
     FSFILE_GetSize(saveFile, &fSize);
+    if(fSize==0)
+    {
+        showMessage("File size is 0!");
+        FSFILE_Close(saveFile);
+        FSFILE_Close(sdFile);
+        return;
+    }
 
     //show what's being copied
     std::string copyString = "Copying " + toString(from) + "...";
     progressBar fileProg((float)fSize, copyString.c_str());
+
     //loop through file until finished
     do
     {
-        FSFILE_Read(saveFile, &read, offset, buff, buff_size);
 
-        FSFILE_Write(sdFile, NULL, offset, buff, read, FS_WRITE_FLUSH);
+        hidScanInput();
 
-        offset += read;
+        u32 up = hidKeysUp();
+
+        res = FSFILE_Read(saveFile, &read, offset, buff, buff_size);
+        if(res==0)
+        {
+            FSFILE_Write(sdFile, NULL, offset, buff, read, FS_WRITE_FLUSH);
+            offset += read;
+        }
+
+        if(up & KEY_B)
+            break;
 
         sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
             fileProg.draw(offset);
         sf2d_end_frame();
+
         sf2d_swapbuffers();
-    }while(read > 0);
+    }
+    while(read > 0);
 
     delete[] buff;
 
@@ -117,12 +136,7 @@ bool backupData(const titleData dat, FS_Archive arch, int mode, bool autoName)
         return false;
 
     //get path returns path to /JKSV/[DIR]
-    pathOut = getPath(mode);
-    //add safe name with forbidden chars removed
-    pathOut += dat.nameSafe;
-    pathOut += L'/';
-
-    pathOut += slot;
+    pathOut = getPath(mode) + dat.nameSafe + (char16_t)'/' + slot;
     std::u16string recreate = pathOut;//need this later after directory is deleted.
     pathOut += L'/';
 
@@ -131,7 +145,7 @@ bool backupData(const titleData dat, FS_Archive arch, int mode, bool autoName)
     //recreate it.
     FSUSER_CreateDirectory(sdArch, fsMakePath(PATH_UTF16, recreate.data()), 0);
 
-    //save archive root
+    //archive root
     std::u16string pathIn;
     pathIn += L'/';
 

@@ -5,6 +5,7 @@
 
 #include "global.h"
 #include "date.h"
+#include "sys.h"
 
 sftd_font *yashi;
 
@@ -12,7 +13,16 @@ sf2d_texture *bar;
 
 FS_Archive sdArch;
 
+bool useTouch, _date;
+
 bool devMode = false;
+
+bool kill = false;
+
+//default colors
+u8 clearColor[3] = {0, 0, 0};
+u8 selColor[3] = {0, 255, 0};
+u8 unSelColor[3] = {128, 128, 128};
 
 //draws the bar shown up top
 void drawTopBar(const std::u32string nfo)
@@ -25,4 +35,10 @@ void drawTopBar(const std::u32string nfo)
 
     //time
     sftd_draw_text(yashi, 360, 0, RGBA8(0, 0, 0, 255), 12, RetTime().c_str());
+}
+
+void killApp(u32 up)
+{
+    if(up & KEY_START)
+        kill = true;
 }

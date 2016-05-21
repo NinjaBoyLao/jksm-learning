@@ -8,10 +8,6 @@
 #include "menu.h"
 #include "img.h"
 
-#define RED RGBA8(255, 0, 0, 255)
-#define BLUE RGBA8(0, 0, 255, 255)
-#define GREEN RGBA8(0, 255, 0, 255)
-#define DARK_GRAY RGBA8(128, 128, 128, 255)
 #define FONT_SIZE 12
 
 sf2d_texture *arrow;
@@ -96,12 +92,12 @@ void menu::draw()
         if(i == selected)
         {
             sf2d_draw_texture(arrow, x, (y + 3) + (i - start) * 14);
-            sftd_draw_wtext(yashi, x + 24, y + ((i - start) * 14), GREEN, FONT_SIZE, (wchar_t *)opts[i].text.data());
+            sftd_draw_wtext(yashi, x + 24, y + ((i - start) * 14), RGBA8(selColor[0], selColor[1], selColor[2], 255), FONT_SIZE, (wchar_t *)opts[i].text.data());
         }
         else if(opts[i].selected)
-            sftd_draw_wtext(yashi, x + 24, y + ((i - start) * 14), RGBA8(200, 0, 0, 255), 12, (wchar_t *)opts[i].text.data());
+            sftd_draw_wtext(yashi, x + 24, y + ((i - start) * 14), RGBA8(200, 0, 0, 255), FONT_SIZE, (wchar_t *)opts[i].text.data());
         else
-            sftd_draw_wtext(yashi, x + 24, y + ((i - start) * 14), DARK_GRAY, FONT_SIZE, (wchar_t *)opts[i].text.data());
+            sftd_draw_wtext(yashi, x + 24, y + ((i - start) * 14), RGBA8(unSelColor[0], unSelColor[1], unSelColor[2], 255), FONT_SIZE, (wchar_t *)opts[i].text.data());
     }
 
 }
@@ -177,6 +173,7 @@ void menu::handleInput(u32 key)
 void menu::reset()
 {
     selected = 0;
+    start = 0;
     opts.clear();
 }
 

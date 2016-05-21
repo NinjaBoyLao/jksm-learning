@@ -9,6 +9,7 @@
 #include "key.h"
 #include "img.h"
 #include "global.h"
+#include "util.h"
 
 //This is my shitty quick keyboard. Probably should've used hbkblib, but I wanted to play with the touch screen.
 //I need to clean this up sometime
@@ -76,15 +77,16 @@ bool Key::Released()
     if((Get.px > X && Get.px < X + Width) && (Get.py > Y && Get.py < Y + Height))
     {
         On = true;
-        return false;
     }
     else
     {
-        if(On)
+        if(On && !touchPressed(Get))
         {
             On = false;
             return true;
         }
+        else
+            On = false;
     }
 
     return false;

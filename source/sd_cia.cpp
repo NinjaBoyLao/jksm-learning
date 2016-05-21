@@ -15,6 +15,7 @@
 #include "button.h"
 #include "textbox.h"
 #include "auto.h"
+#include "slot.h"
 
 void sdBackupMenu(const titleData dat);
 
@@ -38,7 +39,7 @@ void sdStartSelect()
     //Help button
     button help("Help", 224, 208);
 
-    while(loop)
+    while(loop && !kill)
     {
         hidScanInput();
 
@@ -69,6 +70,8 @@ void sdStartSelect()
         else if(up & KEY_B)
             break;
 
+        killApp(up);
+
         sf2d_start_frame(GFX_TOP, GFX_LEFT);
             drawTopBar(info);
             titleMenu.draw();
@@ -87,6 +90,7 @@ enum
 {
     _expSave,
     _impSave,
+    _browse,
     _delSave,
     _expExt,
     _impExt,
@@ -98,6 +102,7 @@ void sdBackupMenu(const titleData dat)
     menu backupMenu(136, 80, false);
     backupMenu.addItem("Export Save");
     backupMenu.addItem("Import Save");
+    backupMenu.addItem("Browse for Save");
     backupMenu.addItem("Delete Save Data");
     backupMenu.addItem("Export ExtData");
     backupMenu.addItem("Import ExtData");
@@ -107,7 +112,7 @@ void sdBackupMenu(const titleData dat)
 
     std::u32string info = tou32(dat.name);
     info += U" : SD/CIA";
-    while(loop)
+    while(loop && !kill)
     {
         hidScanInput();
 
@@ -133,6 +138,12 @@ void sdBackupMenu(const titleData dat)
                         restoreData(dat, archive, MODE_SAVE);
                     }
                     break;
+                case _browse:
+                    if(openSaveArch(&archive, dat, true))
+                    {
+                        restoreDataSDPath(dat, archive, MODE_SAVE);
+                    }
+                    break;
                 case _delSave:
                     if(openSaveArch(&archive, dat, true) && confirm("This will delete game's current save data. Continue?"))
                     {
@@ -153,14 +164,32 @@ void sdBackupMenu(const titleData dat)
                         restoreData(dat, archive, MODE_EXTDATA);
                     }
                     break;
+                /*case _delExt:
+                    if(confirm("This is will delete game's current ExtData. Continue?"))
+                        deleteExtdata(dat);
+                    break;
+                case _creExt:
+                    {
+                        std::u16string extPath = getPath(MODE_EXTDATA) + dat.nameSafe + (char16_t)'/';
+                        std::string slot = GetSlot(false, dat, MODE_EXTDATA);
+                        if(slot.compare("")!=0)
+                        {
+                            extPath += tou16(slot.c_str()) + (char16_t)'/';
+                            dirList getInfo(sdArch, extPath);
+                            createExtdata(dat, getInfo);
+                        }
+                    }
+                    break;*/
                 case _back:
                     loop = false;
                     break;
             }
-            FSUSER_CloseArchive(&archive);
+            FSUSER_CloseArchive(archive);
         }
         else if(up & KEY_B)
             break;
+
+        killApp(up);
 
         sf2d_start_frame(GFX_TOP, GFX_LEFT);
             drawTopBar(info);

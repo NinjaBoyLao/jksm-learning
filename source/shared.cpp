@@ -53,7 +53,7 @@ void sharedBackupMenu(const titleData dat, FS_Archive arch)
     std::u32string info = tou32(dat.nameSafe) + U" : Shared Extdata";
 
     bool loop = true;
-    while(loop)
+    while(loop && !kill)
     {
         hidScanInput();
 
@@ -107,7 +107,7 @@ void sharedExtManager()
 
     std::u32string info = U"Shared ExtData";
     bool loop = true;
-    while(loop)
+    while(loop && !kill)
     {
         hidScanInput();
 
@@ -152,7 +152,7 @@ void sharedExtManager()
                     break;
                 case fe:
                     opened = openSharedExt(&shared, 0xF000000E);
-                    sharedDat.nameSafe = tou16("F0000000E");
+                    sharedDat.nameSafe = tou16("F000000E");
                     break;
                 case back:
                     loop = false;
@@ -163,10 +163,12 @@ void sharedExtManager()
             {
                 sharedBackupMenu(sharedDat, shared);
             }
-            FSUSER_CloseArchive(&shared);
+            FSUSER_CloseArchive(shared);
         }
         else if(up & KEY_B)
             break;
+
+        killApp(up);
 
         sf2d_start_frame(GFX_TOP, GFX_LEFT);
             drawTopBar(info);

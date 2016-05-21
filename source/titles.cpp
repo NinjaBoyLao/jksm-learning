@@ -11,6 +11,7 @@
 #include "db.h"
 #include "ui.h"
 #include "global.h"
+#include "util.h"
 
 std::vector<titleData> sdTitle;
 std::vector<titleData> nandTitle;
@@ -29,17 +30,6 @@ struct
         return false;
     }
 } sortTitles;
-
-bool fexists(const char *path)
-{
-    FILE *test = fopen(path, "r");
-    if(test==NULL)
-        return false;
-
-    fclose(test);
-
-    return true;
-}
 
 void sdTitlesInit()
 {
@@ -63,7 +53,7 @@ void sdTitlesInit()
 
         //get ids
         u64 *ids = new u64[count];
-        AM_GetTitleIdList(MEDIATYPE_SD, count, ids);
+        AM_GetTitleList(NULL, MEDIATYPE_SD, count, ids);
 
         progressBar load((float)count, "Loading titles...");
         for(unsigned i = 0; i < count; i++)
@@ -138,7 +128,7 @@ void nandTitlesInit()
         AM_GetTitleCount(MEDIATYPE_NAND, &count);
 
         u64 *ids = new u64[count];
-        AM_GetTitleIdList(MEDIATYPE_NAND, count, ids);
+        AM_GetTitleList(NULL, MEDIATYPE_NAND, count, ids);
 
         progressBar load((float)count, "Loading NAND titles...");
         for(unsigned i = 0; i < count; i++)
@@ -146,7 +136,7 @@ void nandTitlesInit()
             if(!(nandFilter(ids[i]) && ids[i]!=0) || devMode)
             {
                 titleData newData;
-                if(newData.init(ids[i], MEDIATYPE_NAND) && newData.name[0]!=0)
+                if( (newData.init(ids[i], MEDIATYPE_NAND) && newData.name[0]!=0) || devMode)
                 {
                     sysSaveRedirect(&newData);
                     nandTitle.push_back(newData);

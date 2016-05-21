@@ -1,4 +1,5 @@
 #include <3ds.h>
+#include <stdio.h>
 #include <sf2d.h>
 #include <sftd.h>
 
@@ -9,6 +10,21 @@
 #include "ui.h"
 #include "menu.h"
 #include "util.h"
+
+//Gets the handle of what it's running under and tries to use it
+//I haven't found a title that works yet. Maybe I'm doing this wrong?
+void fsStart()
+{
+   Handle fs;
+   srvGetServiceHandleDirect(&fs, "fs:USER");
+   FSUSER_Initialize(fs);
+   fsUseSession(fs);
+}
+
+void fsEnd()
+{
+    fsEndUseSession();
+}
 
 void loadImgs()
 {
@@ -26,6 +42,19 @@ void freeImgs()
     freeArrow();
 }
 
+void loadCol()
+{
+    FILE *colBin = fopen("/JKSV/colBin", "rb");
+
+    for(int i = 0; i < 3; i++)
+        clearColor[i] = fgetc(colBin);
+    for(int i = 0; i < 3; i++)
+        selColor[i] = fgetc(colBin);
+    for(int i = 0; i < 3; i++)
+        unSelColor[i] = fgetc(colBin);
+
+}
+
 //I just use this so I don't have to type so much. I'm lazy
 void createDir(const char *path)
 {
@@ -34,10 +63,14 @@ void createDir(const char *path)
 
 void sysInit()
 {
+    if(fexists("/JKSV/colBin"))
+    {
+        loadCol();
+    }
     //Start sf2d
     sf2d_init();
     //Set clear to black
-    sf2d_set_clear_color(RGBA8(0, 0, 0, 255));
+    sf2d_set_clear_color(RGBA8(clearColor[0], clearColor[1], clearColor[2], 255));
     //Wait for vsync
     sf2d_set_vblank_wait(1);
 
@@ -56,8 +89,12 @@ void sysInit()
     hidInit();
 
     //Open SDMC archive
-    sdArch = (FS_Archive){ARCHIVE_SDMC, (FS_Path){PATH_EMPTY, 1, ""}};
-    Result Res = FSUSER_OpenArchive(&sdArch);
+    Result Res = FSUSER_OpenArchive(&sdArch, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""));
+    if(Res)
+    {
+        showMessage("Error opening SDMC archive!");
+        logWriteError("SDMC Open", Res);
+    }
 
     //Create output directories
     createDir("/JKSV");
@@ -85,7 +122,7 @@ void sysExit()
     if(runningUnder())
         fsEnd();
     //Close SDMC
-    FSUSER_CloseArchive(&sdArch);
+    FSUSER_CloseArchive(sdArch);
 
     //exit services
     amExit();

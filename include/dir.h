@@ -20,6 +20,7 @@ class dirList
     private:
         Handle d;
         FS_Archive a;
+        std::u16string path;
         std::vector<FS_DirectoryEntry> entry;
 };
 

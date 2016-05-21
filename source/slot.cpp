@@ -13,6 +13,7 @@
 #include "util.h"
 #include "ui.h"
 #include "button.h"
+#include "sdpath.h"
 
 std::string ConvertToString(const std::u16string c)
 {
@@ -51,8 +52,8 @@ std::string GetSlot(bool nSlot, const titleData dat, int Mode)
 
     bool Loop = true;
     std::u32string info = tou32(dat.name) + modeText(Mode);
-    std::string helpText = "Select Folder. X = Rename. Y = Delete. B = Cancel";
-    while(Loop)
+    std::string helpText = "Select a Folder. Press X to rename, Y to delete, and B to cancel.";
+    while(Loop && !kill)
     {
         hidScanInput();
         u32 KeyUp = hidKeysUp();
@@ -64,7 +65,7 @@ std::string GetSlot(bool nSlot, const titleData dat, int Mode)
 
         if(KeyUp & KEY_A)
         {
-            if((u32)(getSlot.getSelected() + 1) > list.count())
+            if((unsigned)(getSlot.getSelected() + 1) > list.count() && nSlot)
             {
                 Ret = GetString();
                 return Ret;
@@ -131,6 +132,8 @@ std::string GetSlot(bool nSlot, const titleData dat, int Mode)
         {
             return "";
         }
+
+        killApp(KeyUp);
 
         sf2d_start_frame(GFX_TOP, GFX_LEFT);
             drawTopBar(info);

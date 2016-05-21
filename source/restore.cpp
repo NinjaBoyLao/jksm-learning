@@ -10,16 +10,35 @@
 #include "dir.h"
 #include "util.h"
 #include "ui.h"
+#include "sdpath.h"
 
 void copyFiletoArch(FS_Archive arch, const std::u16string from, const std::u16string to, int mode)
 {
     Handle sdFile, archFile;
     FSUSER_OpenFile(&sdFile, sdArch, fsMakePath(PATH_UTF16, from.data()), FS_OPEN_READ, 0);
     //OpenFile will fail FS_OPEN_CREATE in ExtData
-    if(mode != MODE_EXTDATA && mode != MODE_BOSS && mode != MODE_SHARED)
+    if(!modeExtdata(mode))
         FSUSER_OpenFile(&archFile, arch, fsMakePath(PATH_UTF16, to.data()), FS_OPEN_CREATE | FS_OPEN_WRITE, 0);
     else
-        FSUSER_OpenFile(&archFile, arch, fsMakePath(PATH_UTF16, to.data()), FS_OPEN_WRITE, 0);
+    {
+        Result chk = FSUSER_OpenFile(&archFile, arch, fsMakePath(PATH_UTF16, to.data()), FS_OPEN_WRITE, 0);
+        if(chk)
+        {
+            //try to create it
+            u64 size = 0;
+            FSFILE_GetSize(sdFile, &size);
+            chk = FSUSER_CreateFile(arch, fsMakePath(PATH_UTF16, to.data()), 0, size);
+            if(chk)
+            {
+                showMessage("Error creating extData file!");
+                logWriteError("Error creating file", chk);
+            }
+            else
+            {
+                FSUSER_OpenFile(&archFile, arch, fsMakePath(PATH_UTF16, to.data()), FS_OPEN_WRITE, 0);
+            }
+        }
+    }
 
     u32 read = 0;
     u64 offset = 0;
@@ -63,6 +82,7 @@ void copyDirToArch(FS_Archive arch, const std::u16string from, const std::u16str
 
             std::u16string newTo = to;
             newTo += list.retItem(i);
+            FSUSER_CreateDirectory(arch, fsMakePath(PATH_UTF16, newTo.data()), 0);
             newTo += L'/';
 
             copyDirToArch(arch, newFrom, newTo, mode);
@@ -93,23 +113,20 @@ bool restoreData(const titleData dat, FS_Archive arch, int mode)
     if(!confirm(ask.c_str()))
         return false;
 
-    sdPath = getPath(mode);
-    sdPath += dat.nameSafe;
-    sdPath += L'/';
-    sdPath += tou16(keepName.c_str());
-    sdPath += L'/';
+    sdPath = getPath(mode) + dat.nameSafe + (char16_t)'/' + tou16(keepName.c_str()) + (char16_t)'/';
 
     std::u16string archPath;
     archPath += L'/';
 
     deleteSV(dat);
+    if(!modeExtdata(mode))
+        FSUSER_DeleteDirectoryRecursively(arch, fsMakePath(PATH_ASCII, "/"));
 
-    FSUSER_DeleteDirectoryRecursively(arch, fsMakePath(PATH_ASCII, "/"));
 
     copyDirToArch(arch, sdPath, archPath, mode);
 
     //If we're not restoring some kind of extdata, commit save data
-    if(mode!=MODE_EXTDATA && mode!=MODE_BOSS && mode != MODE_SHARED)
+    if(!modeExtdata(mode))
     {
         Result res = FSUSER_ControlArchive(arch, ARCHIVE_ACTION_COMMIT_SAVE_DATA, NULL, 0, NULL, 0);
         if(res)
@@ -118,6 +135,29 @@ bool restoreData(const titleData dat, FS_Archive arch, int mode)
             logWriteError("ControlArchive Error", res);
         }
     }
+
+    showMessage("Complete!");
+
+    return true;
+}
+
+bool restoreDataSDPath(const titleData dat, FS_Archive arch, int mode)
+{
+    std::u16string sdPath = getSDPath();
+    if(sdPath.length() < 2)
+        return false;
+
+    std::u16string archPath = (char16_t *)"/";
+
+    deleteSV(dat);
+
+    if(!modeExtdata(mode))
+        FSUSER_DeleteDirectoryRecursively(arch, fsMakePath(PATH_ASCII, "/"));
+
+    copyDirToArch(arch, sdPath, archPath, mode);
+
+    if(!modeExtdata(mode))
+        FSUSER_ControlArchive(arch, ARCHIVE_ACTION_COMMIT_SAVE_DATA, NULL, 0, NULL, 0);
 
     showMessage("Complete!");
 

@@ -3,6 +3,7 @@
 #include <sf2d.h>
 #include <sftd.h>
 #include <string>
+#include <cstdlib>
 
 #include "sys.h"
 #include "global.h"
@@ -13,6 +14,7 @@
 #include "cart.h"
 #include "extra.h"
 #include "shared.h"
+#include "sdpath.h"
 
 enum
 {
@@ -22,10 +24,12 @@ enum
     _shared,
     _refresh,
     _extra,
-    _exit
+    _exit,
+    _test
+
 };
 
-int main(int argc, const char *argv[])
+int main(int argc, const char * argv[])
 {
     sysInit();
 
@@ -38,7 +42,7 @@ int main(int argc, const char *argv[])
     nandTitlesInit();
     logOpen();
 
-    std::u32string info = U"JKSM 3/17/2016";
+    std::u32string info = U"JKSM 5/21/2016";
 
     menu mainMenu(136, 80, false);
     mainMenu.addItem("Cartridge");
@@ -48,18 +52,23 @@ int main(int argc, const char *argv[])
     mainMenu.addItem("Refresh Games");
     mainMenu.addItem("Extras");
     mainMenu.addItem("Exit");
+    if(devMode)
+        mainMenu.addItem("Test");
 
     //I use this to break the loop from inside switches.
     //You could use a goto too, but I was always told goto is da devil
     bool loop = true;
 
-    while(aptMainLoop() && loop)
+    while(aptMainLoop() && loop && !kill)
     {
         hidScanInput();
 
         u32 up = hidKeysUp();
 
         mainMenu.handleInput(up);
+
+        touchPosition p;
+        hidTouchRead(&p);
 
         if(up & KEY_A)
         {
@@ -87,14 +96,19 @@ int main(int argc, const char *argv[])
                 case _exit:
                     loop = false;
                     break;
+                case _test:
+                    getSDPath();
+                    break;
             }
         }
         else if(up & KEY_B)
             break;
 
+        killApp(up);
+
         sf2d_start_frame(GFX_TOP, GFX_LEFT);
-            drawTopBar(info);
-            mainMenu.draw();
+        drawTopBar(info);
+        mainMenu.draw();
         sf2d_end_frame();
 
         sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);

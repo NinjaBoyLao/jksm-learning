@@ -9,6 +9,9 @@ dirList::dirList(FS_Archive arch, const std::u16string p)
     //keep archive data
     a = arch;
 
+    //save path
+    path = p;
+
     //open path given by p
     FSUSER_OpenDirectory(&d, a, fsMakePath(PATH_UTF16, p.data()));
 
