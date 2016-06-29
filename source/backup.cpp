@@ -19,7 +19,6 @@ void copyFileToSD(FS_Archive save, const std::u16string from, const std::u16stri
     if(res)
     {
         showMessage("Error opening save file for reading!");
-        logWriteError("Error opening save file", res);
         return;
     }
 
@@ -27,7 +26,6 @@ void copyFileToSD(FS_Archive save, const std::u16string from, const std::u16stri
     if(res)
     {
         showMessage("Error creating/opening SD file!");
-        logWriteError("Error creating/opening sd", res);
         return;
     }
 
@@ -42,31 +40,49 @@ void copyFileToSD(FS_Archive save, const std::u16string from, const std::u16stri
 
     u64 fSize;
     FSFILE_GetSize(saveFile, &fSize);
-    if(fSize==0)
-    {
-        showMessage("File size is 0!");
-        FSFILE_Close(saveFile);
-        FSFILE_Close(sdFile);
-        return;
-    }
 
     //show what's being copied
     std::string copyString = "Copying " + toString(from) + "...";
+    //This helps with the text being printed in the wrong spot.
+    evenString(&copyString);
     progressBar fileProg((float)fSize, copyString.c_str());
+
+    bool ignoreError = false;
 
     //loop through file until finished
     do
     {
+        memset(buff, 0, buff_size);
 
         hidScanInput();
 
         u32 up = hidKeysUp();
 
         res = FSFILE_Read(saveFile, &read, offset, buff, buff_size);
-        if(res==0)
+        if(res==0 || ignoreError)
         {
+            if(devMode && ignoreError)
+            {
+                char mess[256];
+                sprintf(mess, "FSFILE_Read reported %u bytes read.", (unsigned)read);
+                showMessage(mess);
+            }
             FSFILE_Write(sdFile, NULL, offset, buff, read, FS_WRITE_FLUSH);
             offset += read;
+        }
+        else
+        {
+            char tmp[256];
+            sprintf(tmp, "FSFILE_Read returned error 0x%08X on '%s'. Would you like to ignore it and try anyway? Ignoring it CAN crash this program!", (unsigned)res, toString(from).c_str());
+            std::string error = tmp;
+            evenString(&error);
+            ignoreError = confirm(error.c_str());
+            if(!ignoreError)
+            {
+                FSFILE_Close(sdFile);
+                FSUSER_DeleteFile(sdArch, fsMakePath(PATH_UTF16, to.data()));
+                break;
+            }
         }
 
         if(up & KEY_B)
@@ -128,7 +144,7 @@ bool backupData(const titleData dat, FS_Archive arch, int mode, bool autoName)
 
     //if auto, just use date/time
     if(autoName)
-        slot = tou16(GetDate(FORMAT_YDM));
+        slot = tou16(GetDate(FORMAT_YMD));
     else
         slot = tou16(GetSlot(true, dat, mode).c_str());
 

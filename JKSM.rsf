@@ -4,7 +4,7 @@ BasicInfo:
   Logo                    : Nintendo # Nintendo / Licensed / Distributed / iQue / iQueForSystem
 
 RomFs:
-  $(APP_ROMFS)
+  romfs
 
 TitleInfo:
   Category                : Application
@@ -16,19 +16,19 @@ Option:
   MediaFootPadding        : false # If true CCI files are created with padding
   EnableCrypt             : false # Enables encryption for NCCH and CIA
   EnableCompress          : true # Compresses where applicable (currently only exefs:/.code)
-  
+
 AccessControlInfo:
   CoreVersion                   : 2
 
   # Exheader Format Version
   DescVersion                   : 2
-  
+
   # Minimum Required Kernel Version (below is for 4.5.0)
   ReleaseKernelMajor            : "02"
-  ReleaseKernelMinor            : "33" 
+  ReleaseKernelMinor            : "33"
 
   # ExtData
-  UseExtSaveData                : false # enables ExtData       
+  UseExtSaveData                : false # enables ExtData
   #ExtSaveDataId                : 0x300 # only set this when the ID is different to the UniqueId
 
   # FS:USER Archive Access Permissions
@@ -51,7 +51,7 @@ AccessControlInfo:
    #- ExportImportIvs
    #- DirectSdmcWrite
    #- SwitchCleanup
-   - SaveDataMove
+   #- SaveDataMove
    #- Shop
    #- Shell
    #- CategoryHomeMenu
@@ -87,16 +87,16 @@ AccessControlInfo:
   SystemModeExt                 : Legacy # Legacy(Default)/124MB/178MB  Legacy:Use Old3DS SystemMode
   CpuSpeed                      : 804MHz # 256MHz(Default)/804MHz
   EnableL2Cache                 : true # false(default)/true
-  CanAccessCore2                : false 
+  CanAccessCore2                : false
 
   # Virtual Address Mappings
   IORegisterMapping:
    - 1ff00000-1ff7ffff   # DSP memory
-  MemoryMapping: 
+  MemoryMapping:
    - 1f000000-1f5fffff:r # VRAM
 
   # Accessible SVCs, <Name>:<ID>
-  SystemCallAccess: 
+  SystemCallAccess:
     ArbitrateAddress: 34
     Backdoor: 123
     Break: 60
@@ -191,7 +191,7 @@ SystemControlInfo:
   # Modules that run services listed above should be included below
   # Maximum 48 dependencies
   # <module name>:<module titleid>
-  Dependency: 
+  Dependency:
     ac: 0x0004013000002402
     #act: 0x0004013000003802
     am: 0x0004013000001502

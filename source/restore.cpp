@@ -31,7 +31,6 @@ void copyFiletoArch(FS_Archive arch, const std::u16string from, const std::u16st
             if(chk)
             {
                 showMessage("Error creating extData file!");
-                logWriteError("Error creating file", chk);
             }
             else
             {
@@ -48,6 +47,7 @@ void copyFiletoArch(FS_Archive arch, const std::u16string from, const std::u16st
 
     u8 *buff = new u8[buff_size];
     std::string copyString = "Copying " + toString(from) + "...";
+    evenString(&copyString);
     progressBar fileProg((float)size, copyString.c_str());
     do
     {
@@ -109,6 +109,7 @@ bool restoreData(const titleData dat, FS_Archive arch, int mode)
         return false;
 
     std::string ask = "Really restore " + keepName + "?";
+    evenString(&ask);
 
     if(!confirm(ask.c_str()))
         return false;
@@ -118,7 +119,6 @@ bool restoreData(const titleData dat, FS_Archive arch, int mode)
     std::u16string archPath;
     archPath += L'/';
 
-    deleteSV(dat);
     if(!modeExtdata(mode))
         FSUSER_DeleteDirectoryRecursively(arch, fsMakePath(PATH_ASCII, "/"));
 
@@ -132,7 +132,6 @@ bool restoreData(const titleData dat, FS_Archive arch, int mode)
         if(res)
         {
             showMessage("Error committing save data!");
-            logWriteError("ControlArchive Error", res);
         }
     }
 
@@ -148,8 +147,6 @@ bool restoreDataSDPath(const titleData dat, FS_Archive arch, int mode)
         return false;
 
     std::u16string archPath = (char16_t *)"/";
-
-    deleteSV(dat);
 
     if(!modeExtdata(mode))
         FSUSER_DeleteDirectoryRecursively(arch, fsMakePath(PATH_ASCII, "/"));

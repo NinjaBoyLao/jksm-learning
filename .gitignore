@@ -1,9 +1,8 @@
 build/
 test/
+release/
 *.o
 *.elf
-*.3dsx
-*.png
 *.wav
 *.cbp
 *.layout
@@ -11,5 +10,4 @@ test/
 *.exe
 *.log
 *.txt
-*.xml
 *.7z

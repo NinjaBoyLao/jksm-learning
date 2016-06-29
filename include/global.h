@@ -5,7 +5,6 @@
 #include <sftd.h>
 
 #include <string>
-#include "log.h"
 
 //this is for backup/restore modes
 #define MODE_SAVE 0
@@ -14,11 +13,11 @@
 #define MODE_BOSS 3
 #define MODE_SHARED 4
 
-//buffer size used for copying
-#define buff_size 51200
+//buffer size
+extern unsigned buff_size;
 
 //This is the font used to print everything
-extern sftd_font *yashi;
+extern sftd_font *font;
 
 //This is the bar you see at the top
 extern sf2d_texture *bar;
@@ -34,6 +33,7 @@ extern bool useTouch, _date;
 
 //Turns off filters and other stuff
 extern bool devMode;
+extern bool gatewayMode;
 
 //handles killing the app
 //this breaks every loop and allows

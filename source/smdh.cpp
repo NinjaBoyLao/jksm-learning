@@ -8,8 +8,6 @@
 
 smdh_s *loadSMDH(u32 Low, u32 High, u8 Media)
 {
-    //This is for logging stuff
-    char Tmp[256];
     //Pretty much stolen from hb_menu. It's the only thing I could find with how to open this.
     Handle FileHandle;
 
@@ -31,13 +29,10 @@ smdh_s *loadSMDH(u32 Low, u32 High, u8 Media)
     }
     else
     {
-        sprintf(Tmp, "\tError opening smdh for %08X", (unsigned)Low);
-        logWriteError(Tmp, Res);
         delete Ret;
         Ret = NULL;
     }
 
     FSFILE_Close(FileHandle);
-
     return Ret;
 }

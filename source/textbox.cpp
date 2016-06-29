@@ -1,6 +1,7 @@
 #include <3ds.h>
 #include <sf2d.h>
 #include <sftd.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "global.h"
@@ -21,7 +22,7 @@ void textboxExit()
     sf2d_free_texture(tboxdown);
 }
 
-textbox::textbox(int x, int y, int width, int height, const char *text)
+textbox::textbox(unsigned x, unsigned y, unsigned width, unsigned height, const char *text)
 {
     Text.assign(text);
 
@@ -59,6 +60,5 @@ void textbox::draw(bool Pressed)
     sf2d_draw_texture_part_scale(UseTex, X + 16, (Y + 16) + (16 * yScale), 16, 32, 16, 16, xScale, 1);
     sf2d_draw_texture_part(UseTex, (X + 16) + (16 * xScale), (Y + 16) + (16 * yScale), 32, 32, 16, 16);
 
-    sftd_draw_text_wrap(yashi, X + 8, Y + 8, RGBA8(0, 0, 0, 255), 12, (X + Width) - 16, Text.c_str());
-
+    sftd_draw_text_wrap(font, X + 8, Y + 8, RGBA8(0, 0, 0, 255), 12, (X + Width) - 8, Text.c_str());
 }

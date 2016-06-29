@@ -52,7 +52,7 @@ std::string GetString()
 
         sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
             Back.draw(false);
-            sftd_draw_text(yashi, 32, 32, RGBA8(0, 0, 0, 255), 12, Str.RetString().c_str());
+            sftd_draw_text(font, 32, 32, RGBA8(0, 0, 0, 255), 12, Str.RetString().c_str());
             Str.Print();
         sf2d_end_frame();
 

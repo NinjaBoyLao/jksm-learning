@@ -1,84 +1,34 @@
 #include <3ds.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string>
+#include <vector>
 
 #include "hbfilter.h"
+#include "util.h"
 
 //These are the homebrew IDs from the gbatemp thread - 3Dsurfer.
 //3DSurfer and Picross E3 use the same ID
-u32 filterID[] =
+
+std::vector<u32> filterID;
+
+void loadFilterList()
 {
-    0x110100,
-    0x124200,
-    0x133100,
-    0x133600,
-    0x133700,
-    0x133900,
-    0x192700,
-    0x192800,
-    0x193000,
-    0x193200,
-    0x210100,
-    0x410200,
-    0x555500,
-    0x557700,
-    0x610100,
-    0x710200,
-    0x771800,
-    0x810100,
-    0x910100,
-    0x912500,
-    0xABEE00,
-    0xC1BA00,
-    0xf2ee00,
-    0xf69f00,
-    0xfeba00,
-    0x1f50400,
-    0xc0d0000,
-    0xda00100,
-    0xda00200,
-    0xda00300,
-    0xe7a5a00,
-    0xf002000,
-    0xf002300,
-    0xf002400,
-    0xf002900,
-    0xf003000,
-    0xf0fc200,
-    0xf0fc300,
-    0xf104800,
-    0xf718300,
-    0xfaaaa00,
-    0xff05000,
-    0xff05100,
-    0xff05300,
-    0xff33300,
-    0xffcfc00,
-    0xc0ffee00,
-    0x2c23200,
-    0xf880300,
-    0x2ff00,
-    0xd921e00,
-    0xb00000,
-    0x000C9C00,
-    0x000C9B00,
-    0x0FF40A00,
-    0x0F000700,
-    0x6FFFF00,
-    0xB198200,
-    0xB198900,
-    0xF0ACC00,
-    0xF64ED00,
-    0xFAFA900,
-    0xFF32100,
-    0x28700,
-    0xF0DEF00,
-    0xf04ed00,
-    0x1ddb00,
-    0x26e00,
-    0xf800100,
-    0xff40000,
-    0x00
-};
+    if(fexists("/homebrew/3ds/JKSV/filter.txt"))
+    {
+        FILE *load = fopen("/homebrew/3ds/JKSV/filter.txt", "r");
+
+        char id[16];
+
+        while(fgets(id, 16, load))
+        {
+            u32 newID = strtoul(id, NULL, 16);
+            filterID.push_back(newID);
+        }
+
+        fclose(load);
+    }
+}
 
 bool hbFilter(u64 id)
 {
@@ -91,14 +41,10 @@ bool hbFilter(u64 id)
     if(test.compare("RARCH")==0)
         return true;
 
-    int i = 0;
-    while(filterID[i]!=0)
+    for(unsigned i = 0; i < filterID.size(); i++)
     {
         if(low==filterID[i])
             return true;
-
-        i++;
     }
-
     return false;
 }

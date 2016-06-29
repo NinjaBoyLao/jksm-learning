@@ -26,7 +26,6 @@ bool openSaveArch(FS_Archive *out, const titleData dat, bool showError)
     {
         if(showError)
             showMessage("Error opening save archive!");
-        logWriteError("Error opening save archive", res);
         return false;
     }
 
@@ -77,7 +76,6 @@ bool openSharedExt(FS_Archive *out, u32 id)
     if(res)
     {
         showMessage("Error opening Shared Extdata!");
-        logWriteError("Error opening shared", res);
         return false;
     }
 
@@ -103,6 +101,23 @@ bool openBossExt(FS_Archive *out, const titleData dat)
     return true;
 }
 
+bool openSysModule(FS_Archive *out, const titleData dat)
+{
+    u32 path[2];
+    path[0] = MEDIATYPE_NAND;
+    path[1] = (0x00010000 | dat.unique);
+
+    FS_Path binPath = {PATH_BINARY, 8, path};
+
+    Result res = FSUSER_OpenArchive(out, ARCHIVE_SYSTEM_SAVEDATA, binPath);
+    if(res)
+    {
+        return false;
+    }
+
+    return true;
+}
+
 bool openSysSave(FS_Archive *out, const titleData dat)
 {
     u32 path[2];
@@ -114,8 +129,14 @@ bool openSysSave(FS_Archive *out, const titleData dat)
     Result res = FSUSER_OpenArchive(out, ARCHIVE_SYSTEM_SAVEDATA, binPath);
     if(res)
     {
-        showMessage("Error opening system save data! Title may not use it.");
-        return false;
+        //try opening as module instead
+        if(openSysModule(out, dat))
+            return true;
+        else
+        {
+            showMessage("Error opening system save data. Title may not use it!");
+            return false;
+        }
     }
 
     return true;

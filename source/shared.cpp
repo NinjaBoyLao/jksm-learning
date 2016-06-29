@@ -80,6 +80,9 @@ void sharedBackupMenu(const titleData dat, FS_Archive arch)
         else if(up & KEY_B)
             break;
 
+        //oops forgot this last time
+        killApp(up);
+
         sf2d_start_frame(GFX_TOP, GFX_LEFT);
             drawTopBar(info);
             backupMenu.draw();
@@ -176,7 +179,7 @@ void sharedExtManager()
         sf2d_end_frame();
 
         sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
-            sftd_draw_text_wrap(yashi, 0, 0, RGBA8(255, 255, 255, 255), 12, 320, descs[sharedMenu.getSelected()].c_str());
+            sftd_draw_text_wrap(font, 0, 0, RGBA8(255, 255, 255, 255), 12, 320, descs[sharedMenu.getSelected()].c_str());
         sf2d_end_frame();
 
         sf2d_swapbuffers();

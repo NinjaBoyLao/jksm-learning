@@ -35,9 +35,9 @@ void sdTitlesInit()
 {
     //for refresh games
     sdTitle.clear();
-    if(fexists("/JKSV/titles"))
+    if(fexists("/homebrew/3ds/JKSV/titles"))
     {
-        FILE *read = dbOpen("/JKSV/titles");
+        FILE *read = dbOpen("/homebrew/3ds/JKSV/titles");
         u32 count = dbGetCount(read);
 
         for(unsigned i = 0; i < count; i++)
@@ -78,7 +78,7 @@ void sdTitlesInit()
 
         std::sort(sdTitle.begin(), sdTitle.end(), sortTitles);
 
-        FILE *db = dbCreate("/JKSV/titles");
+        FILE *db = dbCreate("/homebrew/3ds/JKSV/titles");
         dbWriteCount(db, sdTitle.size());
         for(unsigned i = 0; i < sdTitle.size(); i++)
             dbWriteData(db, sdTitle[i]);
@@ -108,9 +108,9 @@ void sysSaveRedirect(titleData *dat)
 void nandTitlesInit()
 {
     nandTitle.clear();
-    if(fexists("/JKSV/nand"))
+    if(fexists("/homebrew/3ds/JKSV/nand"))
     {
-        FILE *read = dbOpen("/JKSV/nand");
+        FILE *read = dbOpen("/homebrew/3ds/JKSV/nand");
         u32 count = dbGetCount(read);
 
         for(unsigned i = 0; i < count; i++)
@@ -153,7 +153,7 @@ void nandTitlesInit()
 
         std::sort(nandTitle.begin(), nandTitle.end(), sortTitles);
 
-        FILE *nand = dbCreate("/JKSV/nand");
+        FILE *nand = dbCreate("/homebrew/3ds/JKSV/nand");
         dbWriteCount(nand, nandTitle.size());
         for(unsigned i = 0; i < nandTitle.size(); i++)
             dbWriteData(nand, nandTitle[i]);

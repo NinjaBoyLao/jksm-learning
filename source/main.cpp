@@ -14,7 +14,9 @@
 #include "cart.h"
 #include "extra.h"
 #include "shared.h"
-#include "sdpath.h"
+#include "hbfilter.h"
+#include "util.h"
+#include "3dsx.h"
 
 enum
 {
@@ -37,84 +39,94 @@ int main(int argc, const char * argv[])
     u32 held = hidKeysHeld();
     if((held & KEY_R) && (held & KEY_L))
         devMode = true;
+    else if(held & KEY_R)
+        gatewayMode = true;
 
-    sdTitlesInit();
-    nandTitlesInit();
-    logOpen();
-
-    std::u32string info = U"JKSM 5/21/2016";
-
-    menu mainMenu(136, 80, false);
-    mainMenu.addItem("Cartridge");
-    mainMenu.addItem("SD/CIA");
-    mainMenu.addItem("System Titles");
-    mainMenu.addItem("Shared ExtData");
-    mainMenu.addItem("Refresh Games");
-    mainMenu.addItem("Extras");
-    mainMenu.addItem("Exit");
-    if(devMode)
-        mainMenu.addItem("Test");
-
-    //I use this to break the loop from inside switches.
-    //You could use a goto too, but I was always told goto is da devil
-    bool loop = true;
-
-    while(aptMainLoop() && loop && !kill)
+    if(runningUnder() && !devMode)
+        start3dsxMode();
+    else
     {
-        hidScanInput();
+        sdTitlesInit();
+        nandTitlesInit();
 
-        u32 up = hidKeysUp();
+        std::u32string info = U"JKSM 6/26/2016";
+        if(devMode)
+            info += U" - DEVMODE";
 
-        mainMenu.handleInput(up);
+        menu mainMenu(136, 80, false);
+        if(!gatewayMode)
+            mainMenu.addItem("Cartridge");
+        else
+            mainMenu.addItem("Gateway cart");
+        mainMenu.addItem("SD/CIA");
+        mainMenu.addItem("System Titles");
+        mainMenu.addItem("Shared ExtData");
+        mainMenu.addItem("Refresh Games");
+        mainMenu.addItem("Extras");
+        mainMenu.addItem("Exit");
+        if(devMode)
+            mainMenu.addItem("Test");
 
-        touchPosition p;
-        hidTouchRead(&p);
+        //I use this to break the loop from inside switches.
+        //You could use a goto too, but I was always told goto is da devil
+        bool loop = true;
 
-        if(up & KEY_A)
+        while(aptMainLoop() && loop && !kill)
         {
-            switch(mainMenu.getSelected())
+            hidScanInput();
+
+            u32 up = hidKeysUp();
+
+            mainMenu.handleInput(up);
+
+            touchPosition p;
+            hidTouchRead(&p);
+
+            if(up & KEY_A)
             {
-                case _cart:
-                    cartManager();
-                    break;
-                case _cia:
-                    sdStartSelect();
-                    break;
-                case _sys:
-                    nandStartSelect();
-                    break;
-                case _shared:
-                    sharedExtManager();
-                    break;
-                case _refresh:
-                    FSUSER_DeleteFile(sdArch, fsMakePath(PATH_ASCII, "/JKSV/titles"));
-                    sdTitlesInit();
-                    break;
-                case _extra:
-                    extrasMenu();
-                    break;
-                case _exit:
-                    loop = false;
-                    break;
-                case _test:
-                    getSDPath();
-                    break;
+                switch(mainMenu.getSelected())
+                {
+                    case _cart:
+                        cartManager();
+                        break;
+                    case _cia:
+                        sdStartSelect();
+                        break;
+                    case _sys:
+                        nandStartSelect();
+                        break;
+                    case _shared:
+                        sharedExtManager();
+                        break;
+                    case _refresh:
+                        FSUSER_DeleteFile(sdArch, fsMakePath(PATH_ASCII, "/homebrew/3ds/JKSV/titles"));
+                        sdTitlesInit();
+                        break;
+                    case _extra:
+                        extrasMenu();
+                        break;
+                    case _exit:
+                        loop = false;
+                        break;
+                    case _test:
+                        break;
+                }
             }
+            else if(up & KEY_B)
+                break;
+
+            killApp(up);
+
+            sf2d_start_frame(GFX_TOP, GFX_LEFT);
+            drawTopBar(info);
+            mainMenu.draw();
+            sf2d_end_frame();
+
+            sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
+            sf2d_end_frame();
+
+            sf2d_swapbuffers();
         }
-        else if(up & KEY_B)
-            break;
-
-        killApp(up);
-
-        sf2d_start_frame(GFX_TOP, GFX_LEFT);
-        drawTopBar(info);
-        mainMenu.draw();
-        sf2d_end_frame();
-
-        sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
-        sf2d_end_frame();
-
-        sf2d_swapbuffers();
     }
 
     sysExit();

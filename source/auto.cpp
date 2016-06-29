@@ -18,7 +18,7 @@ void autoBackup(menu m)
     showMessage("This can take a few minutes depending on how many titles are selected.");
 
 
-    progressBar autoDump((float)m.getSelectCount(), "Copying saves...");
+    progressBar autoDump((float)m.getSelectCount(), "Copying saves... ");
     //Keep track of what's done
     float dumpCount = 0;
     for(unsigned i = 0; i < m.getSize(); i++)

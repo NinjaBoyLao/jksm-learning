@@ -91,7 +91,6 @@ void deleteSV(const titleData t)
     if(res)
     {
         showMessage("Failed to delete secure value!");
-        logWriteError("DeleteSV", res);
     }
 }
 
@@ -101,19 +100,19 @@ std::u16string getPath(int mode)
     switch(mode)
     {
         case MODE_SAVE:
-            ret = tou16("/JKSV/Saves/");
+            ret = tou16("/homebrew/3ds/JKSV/Saves/");
             break;
         case MODE_EXTDATA:
-            ret = tou16("/JKSV/ExtData/");
+            ret = tou16("/homebrew/3ds/JKSV/ExtData/");
             break;
         case MODE_BOSS:
-            ret = tou16("/JKSV/Boss/");
+            ret = tou16("/homebrew/3ds/JKSV/Boss/");
             break;
         case MODE_SYSSAVE:
-            ret = tou16("/JKSV/SysSave/");
+            ret = tou16("/homebrew/3ds/JKSV/SysSave/");
             break;
         case MODE_SHARED:
-            ret = tou16("/JKSV/Shared/");
+            ret = tou16("/homebrew/3ds/JKSV/Shared/");
             break;
     }
     return ret;
@@ -121,10 +120,8 @@ std::u16string getPath(int mode)
 
 bool runningUnder()
 {
-    aptOpenSession();
     u64 id;
     APT_GetProgramID(&id);
-    aptCloseSession();
 
     //check if it's using its own ID
     if(id==0x0004000002c23200)
@@ -143,8 +140,35 @@ void deleteExtdata(const titleData dat)
     if(res)
     {
         showMessage("Error deleting ExtData!");
-        logWriteError("ExtData Delete", res);
     }
+}
+
+void createExtData(const titleData dat)
+{
+    FS_ExtSaveDataInfo create;
+    create.mediaType = MEDIATYPE_SD;
+    create.saveId = dat.extdata;
+
+    smdh_s *tempSmdh = loadSMDH(dat.low, dat.high, dat.media);
+
+    //100 should be enough, right?
+    Result res = FSUSER_CreateExtSaveData(create, 100, 100, 0x10000000, sizeof(smdh_s), (u8 *)tempSmdh);
+    if(res)
+    {
+        char error[256];
+        sprintf(error, "Error creating extData! 0x%08X.", (unsigned)res);
+        showMessage(error);
+    }
+    else
+        showMessage("ExtData created successfully!");
+
+    delete tempSmdh;
+}
+
+void evenString(std::string *test)
+{
+    if(test->length() % 2 == 0)
+        test->append(" ");
 }
 
 //Just returns whether or not the touch screen is pressed anywhere.

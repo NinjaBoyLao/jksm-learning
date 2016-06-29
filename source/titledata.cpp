@@ -89,9 +89,9 @@ void titleData::initId()
 
 void titleData::printInfo()
 {
-    sftd_draw_textf(yashi, 0, 0, RGBA8(0, 255, 255, 255), 12, "High ID : %08X", high);
-    sftd_draw_textf(yashi, 0, 14, RGBA8(255, 255, 0, 255), 12, "Low ID : %08X", low);
-    sftd_draw_textf(yashi, 0, 28, RGBA8(0, 255, 0, 255), 12, "Prod. Code : %s", prodCode.c_str());
+    sftd_draw_textf(font, 0, 0, RGBA8(0, 255, 255, 255), 12, "High ID : %08X", high);
+    sftd_draw_textf(font, 0, 14, RGBA8(255, 255, 0, 255), 12, "Low ID : %08X", low);
+    sftd_draw_textf(font, 0, 28, RGBA8(0, 255, 0, 255), 12, "Prod. Code : %s", prodCode.c_str());
     if(devMode)
-        sftd_draw_textf(yashi, 0, 42, RGBA8(255, 255, 255, 255), 12, "Unique : %08X", unique);
+        sftd_draw_textf(font, 0, 42, RGBA8(255, 255, 255, 255), 12, "Unique : %08X", unique);
 }

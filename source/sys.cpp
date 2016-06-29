@@ -2,29 +2,22 @@
 #include <stdio.h>
 #include <sf2d.h>
 #include <sftd.h>
+#include <vector>
 
-#include "yashi_ttf.h"
+#include "font_ttf.h"
 #include "img.h"
 #include "global.h"
 #include "textbox.h"
 #include "ui.h"
 #include "menu.h"
 #include "util.h"
+#include "titles.h"
+#include "hbfilter.h"
+
+extern std::vector<u32> filterID;
 
 //Gets the handle of what it's running under and tries to use it
 //I haven't found a title that works yet. Maybe I'm doing this wrong?
-void fsStart()
-{
-   Handle fs;
-   srvGetServiceHandleDirect(&fs, "fs:USER");
-   FSUSER_Initialize(fs);
-   fsUseSession(fs);
-}
-
-void fsEnd()
-{
-    fsEndUseSession();
-}
 
 void loadImgs()
 {
@@ -44,7 +37,7 @@ void freeImgs()
 
 void loadCol()
 {
-    FILE *colBin = fopen("/JKSV/colBin", "rb");
+    FILE *colBin = fopen("/homebrew/3ds/JKSV/colBin", "rb");
 
     for(int i = 0; i < 3; i++)
         clearColor[i] = fgetc(colBin);
@@ -53,6 +46,18 @@ void loadCol()
     for(int i = 0; i < 3; i++)
         unSelColor[i] = fgetc(colBin);
 
+    fclose(colBin);
+}
+
+void changeBuffSize()
+{
+    FILE *bSize = fopen("/homebrew/3ds/JKSV/buff_size", "rb");
+
+    buff_size = 0;
+    for(int i = 0; i < 4; i++)
+        buff_size += (fgetc(bSize) << (8 * i));
+
+    fclose(bSize);
 }
 
 //I just use this so I don't have to type so much. I'm lazy
@@ -63,24 +68,30 @@ void createDir(const char *path)
 
 void sysInit()
 {
-    if(fexists("/JKSV/colBin"))
-    {
+    if(fexists("/homebrew/3ds/JKSV/colBin"))
         loadCol();
-    }
+    if(fexists("/homebrew/3ds/JKSV/buff_size"))
+        changeBuffSize();
+
+    loadFilterList();
+
     //Start sf2d
     sf2d_init();
     //Set clear to black
     sf2d_set_clear_color(RGBA8(clearColor[0], clearColor[1], clearColor[2], 255));
-    //Wait for vsync
-    sf2d_set_vblank_wait(1);
 
-    //Start sftd
-    sftd_init();
-    //Load yashi
-    yashi = sftd_load_font_mem(yashi_ttf, yashi_ttf_size);
+    sf2d_set_3D(0);
 
     //Load graphics needed
     loadImgs();
+
+    //Start sftd
+    sftd_init();
+    //Load font
+    if(fexists("/homebrew/3ds/JKSV/font.ttf"))
+        font = sftd_load_font_file("/homebrew/3ds/JKSV/font.ttf");
+    else
+        font = sftd_load_font_mem(font_ttf, font_ttf_size);
 
     //Start 3ds services
     amInit();
@@ -93,34 +104,26 @@ void sysInit()
     if(Res)
     {
         showMessage("Error opening SDMC archive!");
-        logWriteError("SDMC Open", Res);
     }
 
     //Create output directories
-    createDir("/JKSV");
+    createDir("/homebrew");
+    createDir("/homebrew/3ds");
+    createDir("/homebrew/3ds/JKSV");
 
     //These are just in case they used an earlier build. Just moves the folders inside /JKSV
-    FSUSER_RenameDirectory(sdArch, fsMakePath(PATH_ASCII, "/Saves/"), sdArch, fsMakePath(PATH_ASCII, "/JKSV/Saves/"));
-    FSUSER_RenameDirectory(sdArch, fsMakePath(PATH_ASCII, "/ExtData/"), sdArch, fsMakePath(PATH_ASCII, "/JKSV/ExtData/"));
+    /*FSUSER_RenameDirectory(sdArch, fsMakePath(PATH_ASCII, "/Saves/"), sdArch, fsMakePath(PATH_ASCII, "/JKSV/Saves/"));
+    FSUSER_RenameDirectory(sdArch, fsMakePath(PATH_ASCII, "/ExtData/"), sdArch, fsMakePath(PATH_ASCII, "/JKSV/ExtData/"));*/
 
-    createDir("/JKSV/Saves");
-    createDir("/JKSV/ExtData");
-    createDir("/JKSV/SysSave");
-    createDir("/JKSV/Boss");
-    createDir("/JKSV/Shared");
-
-    //I decided to leave this in this time around
-    //It detects if it's running by itself(CIA) or under something(3DSX)
-    //I haven't found a title yet that gives it the right permissions
-    //It's also possible that I'm doing it wrong.
-    if(runningUnder())
-        fsStart();
+    createDir("/homebrew/3ds/JKSV/Saves");
+    createDir("/homebrew/3ds/JKSV/ExtData");
+    createDir("/homebrew/3ds/JKSV/SysSave");
+    createDir("/homebrew/3ds/JKSV/Boss");
+    createDir("/homebrew/3ds/JKSV/Shared");
 }
 
 void sysExit()
 {
-    if(runningUnder())
-        fsEnd();
     //Close SDMC
     FSUSER_CloseArchive(sdArch);
 
@@ -132,7 +135,11 @@ void sysExit()
 
     freeImgs();
 
-    sftd_free_font(yashi);
+    sdTitle.clear();
+    nandTitle.clear();
+    filterID.clear();
+
+    sftd_free_font(font);
     sftd_fini();
     sf2d_fini();
 }

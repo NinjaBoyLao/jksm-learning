@@ -63,7 +63,7 @@ std::u16string getSDPath()
     copyListToMenu(&sdBrowse, sdList);
 
     button help("Help", 224, 208);
-    std::string helpText = "Locate directory containing the save files you want to import. Press Y when finished. Press X to cancel.";
+    std::string helpText = "Locate directory containing the save files you want to import. Press Y when finished. Press X to cancel. ";
 
     while(1)
     {
@@ -88,7 +88,7 @@ std::u16string getSDPath()
             upDir(&sdList, &sdBrowse, &cPath);
         else if(up & KEY_Y)
         {
-            if(sdList.isDir(sdBrowse.getSelected() - 1) && confirm("Use this directory to restore? Everything in it will be copied to current game's save archive."))
+            if(sdList.isDir(sdBrowse.getSelected() - 1) && confirm("Use this directory to restore? Everything in it will be copied to current game's save archive. "))
             {
                 cPath += sdList.retItem(sdBrowse.getSelected() - 1);
                 cPath += L'/';
@@ -104,7 +104,7 @@ std::u16string getSDPath()
             showMessage(helpText.c_str());
 
         sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
-            sftd_draw_text(yashi, 0, 0, RGBA8(255, 255, 255 ,255), 12, toString(cPath).c_str());
+            sftd_draw_text(font, 0, 0, RGBA8(255, 255, 255 ,255), 12, toString(cPath).c_str());
             sdBrowse.draw();
             help.draw();
         sf2d_end_frame();

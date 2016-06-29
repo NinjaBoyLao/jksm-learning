@@ -1,6 +1,7 @@
 #include <3ds.h>
 #include <sf2d.h>
 #include <sftd.h>
+#include <stdio.h>
 #include <string>
 
 #include "archive.h"
@@ -12,14 +13,13 @@
 #include "util.h"
 #include "titledata.h"
 #include "global.h"
+#include "savemenu.h"
+#include "extmenu.h"
 
 enum
 {
-    _expSave,
-    _impSave,
-    _delSave,
-    _expExt,
-    _impExt,
+    _saveOpts,
+    _extDataOpts,
     _back
 };
 
@@ -34,6 +34,59 @@ bool openCart(FS_Archive *out, const titleData dat)
 
     return false;
 }
+
+bool gatewayCopy(const titleData dat)
+{
+    char path[32];
+    sprintf(path,"/%016llX.sav", dat.id);
+
+    FILE *save = fopen(path, "rb");
+    if(save==NULL)
+        return false;
+
+    fseek(save, 0, SEEK_END);
+    unsigned size = ftell(save);
+    fseek(save, 0, SEEK_SET);
+
+    u8 *buff = new u8[size];
+
+    fread(buff, 1, size, save);
+    fclose(save);
+
+    save = fopen("/0004000002C23200.sav", "wb");
+    fwrite(buff, 1, size, save);
+    fclose(save);
+
+    delete[] buff;
+
+    return true;
+}
+
+void gatewayCopyBack(const titleData dat)
+{
+    char path[32];
+    sprintf(path, "/%016llX.sav", dat.id);
+
+    FILE *save = fopen("/0004000002C23200.sav", "rb");
+
+    fseek(save, 0, SEEK_END);
+    unsigned size = ftell(save);
+    fseek(save, 0, SEEK_SET);
+
+    u8 *buff = new u8[size];
+
+    fread(buff, 1, size, save);
+    fclose(save);
+
+    save = fopen(path, "wb");
+    fwrite(buff, 1, size, save);
+    fclose(save);
+
+    delete[] buff;
+}
+
+
+extern std::string extDataConfirm;
 
 void cartManager()
 {
@@ -67,21 +120,28 @@ void cartManager()
         return;
     }
 
+    if(gatewayMode)
+    {
+        bool copied = gatewayCopy(cartData);
+        if(!copied)
+        {
+            showMessage("Couldn't find Gateway sav file!");
+            return;
+        }
+    }
+
     //top bar info
     //wchar_t for 3ds is 32bit.
     std::u32string info = tou32(cartData.name);
     info += U" : Cart";
 
     //menu
-    menu cartMenu(136, 80, false);
-    cartMenu.addItem("Export Save");
-    cartMenu.addItem("Import Save");
-    cartMenu.addItem("Delete Save Data");
-    cartMenu.addItem("Export ExtData");
-    cartMenu.addItem("Import ExtData");
+    menu cartMenu(136, 64, false);
+    cartMenu.addItem("Save Data Options");
+    cartMenu.addItem("ExtData Options");
     cartMenu.addItem("Back");
 
-    bool loop = true;
+    bool loop = true, importSave = false;
 
     while(loop && !kill)
     {
@@ -96,39 +156,17 @@ void cartManager()
             FS_Archive archive;
             switch(cartMenu.getSelected())
             {
-                //basically, we switch whats selected in the menu
-                //and only continue if we can open the archive.
-                case _expSave:
+                case _saveOpts:
                     if(openCart(&archive, cartData))
-                    {
-                        createTitleDir(cartData, MODE_SAVE);
-                        backupData(cartData, archive, MODE_SAVE, false);
-                    }
+                        startSaveMenu(archive, cartData);
                     break;
-                case _impSave:
-                    if(openCart(&archive, cartData))
-                    {
-                        restoreData(cartData, archive, MODE_SAVE);
-                    }
-                    break;
-                case _delSave:
-                    if(openCart(&archive, cartData) && confirm("This will delete save data present on cart. Continue?"))
-                    {
-                        FSUSER_DeleteDirectoryRecursively(archive, fsMakePath(PATH_ASCII, "/"));
-                        FSUSER_ControlArchive(archive, ARCHIVE_ACTION_COMMIT_SAVE_DATA, NULL, 0, NULL, 0);
-                    }
-                    break;
-                case _expExt:
+                case _extDataOpts:
                     if(openExtdata(&archive, cartData, true))
+                        startExtMenu(archive, cartData);
+                    else
                     {
-                        createTitleDir(cartData, MODE_EXTDATA);
-                        backupData(cartData, archive, MODE_EXTDATA, false);
-                    }
-                    break;
-                case _impExt:
-                    if(openExtdata(&archive, cartData, true))
-                    {
-                        restoreData(cartData, archive, MODE_EXTDATA);
+                        if(confirm("Would you like to try to create extra data for this title?"))
+                            createExtData(cartData);
                     }
                     break;
                 case _back:
@@ -152,5 +190,12 @@ void cartManager()
         sf2d_end_frame();
 
         sf2d_swapbuffers();
+    }
+
+    //Copy gateway save back and clean up
+    if(gatewayMode && importSave)
+    {
+        gatewayCopyBack(cartData);
+        remove("/0004000002C23200.sav");
     }
 }

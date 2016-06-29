@@ -52,7 +52,7 @@ void Key::ChangeChar(char nCh)
 void Key::Print(sf2d_texture *Back)
 {
     sf2d_draw_texture(Back, X, Y);
-    sftd_draw_text(yashi, X + 12, Y + 8, RGBA8(0, 0, 0, 255), 12, Disp);
+    sftd_draw_text(font, X + 12, Y + 8, RGBA8(0, 0, 0, 255), 12, Disp);
 }
 
 void Key::DisplayChar(char nCh)

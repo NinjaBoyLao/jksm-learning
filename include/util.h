@@ -16,6 +16,9 @@ void deleteSV(const titleData t);
 std::u16string getPath(int mode);
 
 void deleteExtdata(const titleData dat);
+void createExtData(const titleData dat);
+
+void evenString(std::string *test);
 
 //This detects if running under something as 3dsx
 bool runningUnder();

@@ -1,6 +1,7 @@
 #include <3ds.h>
 #include <sf2d.h>
 #include <sftd.h>
+#include <stdio.h>
 #include <string>
 #include <vector>
 
@@ -16,6 +17,8 @@
 #include "textbox.h"
 #include "auto.h"
 #include "slot.h"
+#include "savemenu.h"
+#include "extmenu.h"
 
 void sdBackupMenu(const titleData dat);
 
@@ -88,24 +91,16 @@ void sdStartSelect()
 
 enum
 {
-    _expSave,
-    _impSave,
-    _browse,
-    _delSave,
-    _expExt,
-    _impExt,
+    _saveOpts,
+    _extDataOpts,
     _back
 };
 
 void sdBackupMenu(const titleData dat)
 {
-    menu backupMenu(136, 80, false);
-    backupMenu.addItem("Export Save");
-    backupMenu.addItem("Import Save");
-    backupMenu.addItem("Browse for Save");
-    backupMenu.addItem("Delete Save Data");
-    backupMenu.addItem("Export ExtData");
-    backupMenu.addItem("Import ExtData");
+    menu backupMenu(136, 96, false);
+    backupMenu.addItem("Save Data Options");
+    backupMenu.addItem("ExtData Options");
     backupMenu.addItem("Back");
 
     bool loop = true;
@@ -125,61 +120,24 @@ void sdBackupMenu(const titleData dat)
             FS_Archive archive;
             switch(backupMenu.getSelected())
             {
-                case _expSave:
+                case _saveOpts:
                     if(openSaveArch(&archive, dat, true))
                     {
-                        createTitleDir(dat, MODE_SAVE);
-                        backupData(dat, archive, MODE_SAVE, false);
+                        startSaveMenu(archive, dat);
+                        deleteSV(dat);
                     }
                     break;
-                case _impSave:
-                    if(openSaveArch(&archive, dat, true))
-                    {
-                        restoreData(dat, archive, MODE_SAVE);
-                    }
-                    break;
-                case _browse:
-                    if(openSaveArch(&archive, dat, true))
-                    {
-                        restoreDataSDPath(dat, archive, MODE_SAVE);
-                    }
-                    break;
-                case _delSave:
-                    if(openSaveArch(&archive, dat, true) && confirm("This will delete game's current save data. Continue?"))
-                    {
-                        FSUSER_DeleteDirectoryRecursively(archive, fsMakePath(PATH_ASCII, "/"));
-                        FSUSER_ControlArchive(archive, ARCHIVE_ACTION_COMMIT_SAVE_DATA, NULL, 0, NULL, 0);
-                    }
-                    break;
-                case _expExt:
+                case _extDataOpts:
                     if(openExtdata(&archive, dat, true))
                     {
-                        createTitleDir(dat, MODE_EXTDATA);
-                        backupData(dat, archive, MODE_EXTDATA, false);
+                        startExtMenu(archive, dat);
                     }
-                    break;
-                case _impExt:
-                    if(openExtdata(&archive, dat, true))
+                    else
                     {
-                        restoreData(dat, archive, MODE_EXTDATA);
+                        if(confirm("Would you like to try to create extra data for this title?"))
+                            createExtData(dat);
                     }
                     break;
-                /*case _delExt:
-                    if(confirm("This is will delete game's current ExtData. Continue?"))
-                        deleteExtdata(dat);
-                    break;
-                case _creExt:
-                    {
-                        std::u16string extPath = getPath(MODE_EXTDATA) + dat.nameSafe + (char16_t)'/';
-                        std::string slot = GetSlot(false, dat, MODE_EXTDATA);
-                        if(slot.compare("")!=0)
-                        {
-                            extPath += tou16(slot.c_str()) + (char16_t)'/';
-                            dirList getInfo(sdArch, extPath);
-                            createExtdata(dat, getInfo);
-                        }
-                    }
-                    break;*/
                 case _back:
                     loop = false;
                     break;

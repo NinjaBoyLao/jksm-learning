@@ -6,12 +6,12 @@
 class textbox
 {
     public:
-        textbox(int x, int y, int width, int height, const char *text);
+        textbox(unsigned x, unsigned y, unsigned width, unsigned height, const char *text);
         void draw(bool Pressed);
 
-        int X, Y;
+        unsigned X, Y;
     protected:
-        int Width, Height;
+        unsigned Width, Height;
         std::string Text;
 };
 
