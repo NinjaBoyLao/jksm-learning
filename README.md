@@ -3,11 +3,8 @@ JKSM - JK's Save Manager
 
 Requires:
 	[smealum's ctrulib](https://github.com/smealum/ctrulib)
-	
-	[xerpi's portlibs](https://github.com/xerpi/3ds_portlibs)
-	
-	[xerpi's sf2d](https://github.com/xerpi/sf2dlib/tree/effe77ea81d21c26bad457d4f5ed8bb16ce7b753) - Please use this commit until I have time to sit and figure out what's up.
-	
+	[xerpi's portlibs](https://github.com/xerpi/3ds_portlibs)	
+	[xerpi's sf2d](https://github.com/xerpi/sf2dlib/tree/effe77ea81d21c26bad457d4f5ed8bb16ce7b753)
 	[xerpi's sftd](https://github.com/xerpi/sftdlib)
 
 Place makerom inside your devkitARM's bin directory. Type 'make cia' inside the project's directory to build.
