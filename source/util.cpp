@@ -100,19 +100,19 @@ std::u16string getPath(int mode)
     switch(mode)
     {
         case MODE_SAVE:
-            ret = tou16("/homebrew/3ds/JKSV/Saves/");
+            ret = tou16("/JKSV/Saves/");
             break;
         case MODE_EXTDATA:
-            ret = tou16("/homebrew/3ds/JKSV/ExtData/");
+            ret = tou16("/JKSV/ExtData/");
             break;
         case MODE_BOSS:
-            ret = tou16("/homebrew/3ds/JKSV/Boss/");
+            ret = tou16("/JKSV/Boss/");
             break;
         case MODE_SYSSAVE:
-            ret = tou16("/homebrew/3ds/JKSV/SysSave/");
+            ret = tou16("/JKSV/SysSave/");
             break;
         case MODE_SHARED:
-            ret = tou16("/homebrew/3ds/JKSV/Shared/");
+            ret = tou16("/JKSV/Shared/");
             break;
     }
     return ret;

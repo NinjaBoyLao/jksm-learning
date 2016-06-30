@@ -49,7 +49,7 @@ int main(int argc, const char * argv[])
         sdTitlesInit();
         nandTitlesInit();
 
-        std::u32string info = U"JKSM 6/26/2016";
+        std::u32string info = U"JKSM 6/30/2016";
         if(devMode)
             info += U" - DEVMODE";
 
@@ -99,7 +99,7 @@ int main(int argc, const char * argv[])
                         sharedExtManager();
                         break;
                     case _refresh:
-                        FSUSER_DeleteFile(sdArch, fsMakePath(PATH_ASCII, "/homebrew/3ds/JKSV/titles"));
+                        FSUSER_DeleteFile(sdArch, fsMakePath(PATH_ASCII, "/JKSV/titles"));
                         sdTitlesInit();
                         break;
                     case _extra:

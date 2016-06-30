@@ -16,9 +16,6 @@
 
 extern std::vector<u32> filterID;
 
-//Gets the handle of what it's running under and tries to use it
-//I haven't found a title that works yet. Maybe I'm doing this wrong?
-
 void loadImgs()
 {
     bar = sf2d_create_texture_mem_RGBA8(TopBar.pixel_data, TopBar.width, TopBar.height, TEXFMT_RGBA8, SF2D_PLACE_RAM);
@@ -37,7 +34,7 @@ void freeImgs()
 
 void loadCol()
 {
-    FILE *colBin = fopen("/homebrew/3ds/JKSV/colBin", "rb");
+    FILE *colBin = fopen("/JKSV/colBin", "rb");
 
     for(int i = 0; i < 3; i++)
         clearColor[i] = fgetc(colBin);
@@ -51,7 +48,7 @@ void loadCol()
 
 void changeBuffSize()
 {
-    FILE *bSize = fopen("/homebrew/3ds/JKSV/buff_size", "rb");
+    FILE *bSize = fopen("/JKSV/buff_size", "rb");
 
     buff_size = 0;
     for(int i = 0; i < 4; i++)
@@ -68,9 +65,9 @@ void createDir(const char *path)
 
 void sysInit()
 {
-    if(fexists("/homebrew/3ds/JKSV/colBin"))
+    if(fexists("/JKSV/colBin"))
         loadCol();
-    if(fexists("/homebrew/3ds/JKSV/buff_size"))
+    if(fexists("/JKSV/buff_size"))
         changeBuffSize();
 
     loadFilterList();
@@ -88,8 +85,8 @@ void sysInit()
     //Start sftd
     sftd_init();
     //Load font
-    if(fexists("/homebrew/3ds/JKSV/font.ttf"))
-        font = sftd_load_font_file("/homebrew/3ds/JKSV/font.ttf");
+    if(fexists("/JKSV/font.ttf"))
+        font = sftd_load_font_file("/JKSV/font.ttf");
     else
         font = sftd_load_font_mem(font_ttf, font_ttf_size);
 
@@ -106,20 +103,13 @@ void sysInit()
         showMessage("Error opening SDMC archive!");
     }
 
-    //Create output directories
-    createDir("/homebrew");
-    createDir("/homebrew/3ds");
-    createDir("/homebrew/3ds/JKSV");
+    createDir("/JKSV");
 
-    //These are just in case they used an earlier build. Just moves the folders inside /JKSV
-    /*FSUSER_RenameDirectory(sdArch, fsMakePath(PATH_ASCII, "/Saves/"), sdArch, fsMakePath(PATH_ASCII, "/JKSV/Saves/"));
-    FSUSER_RenameDirectory(sdArch, fsMakePath(PATH_ASCII, "/ExtData/"), sdArch, fsMakePath(PATH_ASCII, "/JKSV/ExtData/"));*/
-
-    createDir("/homebrew/3ds/JKSV/Saves");
-    createDir("/homebrew/3ds/JKSV/ExtData");
-    createDir("/homebrew/3ds/JKSV/SysSave");
-    createDir("/homebrew/3ds/JKSV/Boss");
-    createDir("/homebrew/3ds/JKSV/Shared");
+    createDir("/JKSV/Saves");
+    createDir("/JKSV/ExtData");
+    createDir("/JKSV/SysSave");
+    createDir("/JKSV/Boss");
+    createDir("/JKSV/Shared");
 }
 
 void sysExit()

@@ -136,7 +136,7 @@ void cartManager()
     info += U" : Cart";
 
     //menu
-    menu cartMenu(136, 64, false);
+    menu cartMenu(136, 96, false);
     cartMenu.addItem("Save Data Options");
     cartMenu.addItem("ExtData Options");
     cartMenu.addItem("Back");
