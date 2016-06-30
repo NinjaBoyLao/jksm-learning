@@ -9,9 +9,7 @@ Requires:
 
 Place makerom inside your devkitARM's bin directory. Type 'make cia' inside the project's directory to build.
 
-I was asked to move the folder location to sd:/homebrew/3ds/JKSV to help keep homebrew users SD cards a bit more clean. Please move your JKSV folder to this location if you have used this program before.
-
-A custom font can be used by placing it in the sd:/homebrew/3ds/JKSV folder and naming it "font.ttf". I also recommend replacing the font with a smaller one if you're building a 3dsx.
+A custom font can be used by placing it in the sd:/JKSV folder and naming it "font.ttf". I also recommend replacing the font with a smaller one if you're building a 3dsx.
 
 Due to the fact that I cannot keep up with homebrew releases anymore, I've decided to make the filter list external. If you need to add a program to it, copy its lower ID to the end of filter.txt
 in your JKSV folder as 0xXXXXXXXX.
