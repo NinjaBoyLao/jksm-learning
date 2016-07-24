@@ -10,12 +10,14 @@
 
 using namespace std;
 
-button::button(const char * sText, int sX, int sY)
+button::button(const char * sText, int sX, int sY, int sWidth, int sHeight)
 {
-    Box = new textbox(sX, sY, 96, 32, sText);
+    Box = new textbox(sX, sY, sWidth, sHeight, sText);
 
     X = sX;
     Y = sY;
+    width = sWidth;
+    height = sHeight;
 
     Pressed = false;
 }
@@ -33,7 +35,7 @@ void button::draw()
 //This checks whether the stylus is inside the button
 bool button::isOver(touchPosition p)
 {
-    if( (p.px > X && p.px < X + 96) && (p.py > Y && p.py < Y + 32) )
+    if( (p.px > X && p.px < X + width) && (p.py > Y && p.py < Y + height) )
         return true;
 
     return false;

@@ -15,146 +15,149 @@
 #include "titledata.h"
 #include "archive.h"
 
-void nandBackup(const titleData dat);
+titleData * sysTitle = NULL;
 
-void nandStartSelect()
+static menu nandMenu(88, 20, false, true);
+
+void prepNandSelect()
 {
-    menu nandMenu(88, 20, false);
     for(unsigned i = 0; i < nandTitle.size(); i++)
         nandMenu.addItem(nandTitle[i].name);
 
-    std::u32string info = U"Select a title";
-    bool loop = true;
-
-    while(loop && !kill)
-    {
-        hidScanInput();
-
-        u32 up = hidKeysUp();
-
-        nandMenu.handleInput(up);
-
-        if(up & KEY_A)
-        {
-            nandBackup(nandTitle[nandMenu.getSelected()]);
-        }
-        else if(up & KEY_B)
-            break;
-
-        killApp(up);
-
-        sf2d_start_frame(GFX_TOP, GFX_LEFT);
-            nandMenu.draw();
-            drawTopBar(info);
-        sf2d_end_frame();
-
-        sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
-            nandTitle[nandMenu.getSelected()].printInfo();
-        sf2d_end_frame();
-
-        sf2d_swapbuffers();
-    }
+    nandMenu.autoVert();
 }
 
-enum
+void nandStartSelect()
 {
-    _expSys,
-    _impSys,
-    _expExt,
-    _impExt,
-    _expBoss,
-    _impBoss,
-    _back
+    hidScanInput();
+
+    u32 down = hidKeysDown();
+    u32 held = hidKeysHeld();
+
+    nandMenu.handleInput(down, held);
+
+    if(down & KEY_A)
+    {
+        sysTitle = &nandTitle[nandMenu.getSelected()];
+        state = STATE_NANDBACKUP;
+    }
+    else if(down & KEY_B)
+        state = STATE_MAINMENU;
+
+    killApp(down);
+
+    sf2d_start_frame(GFX_TOP, GFX_LEFT);
+        nandMenu.draw();
+        drawTopBar(U"Select System Title");
+    sf2d_end_frame();
+
+    sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
+        nandTitle[nandMenu.getSelected()].printInfo();
+    sf2d_end_frame();
+
+    sf2d_swapbuffers();
+}
+
+enum sysOpts
+{
+    expSys,
+    impSys,
+    expExt,
+    impExt,
+    expBoss,
+    impBoss,
+    back
 };
 
-void nandBackup(const titleData dat)
+static menu nBackupMenu(112, 72, false, true);
+
+void prepNandBackup()
 {
-    menu backupMenu(112, 72, false);
-    backupMenu.addItem("Export System Save");
-    backupMenu.addItem("Import System Save");
-    backupMenu.addItem("Export ExtData");
-    backupMenu.addItem("Import ExtData");
-    backupMenu.addItem("Export Boss ExtData");
-    backupMenu.addItem("Import Boss ExtData");
-    backupMenu.addItem("Back");
+    nBackupMenu.addItem("Export System Save");
+    nBackupMenu.addItem("Import System Save");
+    nBackupMenu.addItem("Export ExtData");
+    nBackupMenu.addItem("Import ExtData");
+    nBackupMenu.addItem("Export Boss ExtData");
+    nBackupMenu.addItem("Import Boss ExtData");
+    nBackupMenu.addItem("Back");
 
-    bool loop = true;
+    nBackupMenu.autoVert();
+}
 
-    std::u32string info = tou32(dat.name);
-    info += U" : NAND";
+void nandBackup()
+{
+    std::u32string info = tou32(sysTitle->name) + U" : NAND";
 
-    while(loop && !kill)
+    hidScanInput();
+
+    u32 down = hidKeysDown();
+
+    nBackupMenu.handleInput(down, 0);
+
+    if(down & KEY_A)
     {
-        hidScanInput();
-
-        u32 up = hidKeysUp();
-
-        backupMenu.handleInput(up);
-
-        if(up & KEY_A)
+        FS_Archive arch;
+        switch(nBackupMenu.getSelected())
         {
-            FS_Archive arch;
-            switch(backupMenu.getSelected())
-            {
-                case _expSys:
-                    if(openSysSave(&arch, dat))
-                    {
-                        createTitleDir(dat, MODE_SYSSAVE);
-                        backupData(dat, arch, MODE_SYSSAVE, false);
-                    }
-                    break;
-                case _impSys:
-                    if(openSysSave(&arch, dat))
-                    {
-                        restoreData(dat, arch, MODE_SYSSAVE);
-                    }
-                    break;
-                case _expExt:
-                    if(openExtdata(&arch, dat, true))
-                    {
-                        createTitleDir(dat, MODE_EXTDATA);
-                        backupData(dat, arch, MODE_EXTDATA, false);
-                    }
-                    break;
-                case _impExt:
-                    if(openExtdata(&arch, dat, true))
-                    {
-                        restoreData(dat, arch, MODE_EXTDATA);
-                    }
-                    break;
-                case _expBoss:
-                    if(openBossExt(&arch, dat))
-                    {
-                        createTitleDir(dat, MODE_BOSS);
-                        backupData(dat, arch, MODE_BOSS, false);
-                    }
-                    break;
-                case _impBoss:
-                    if(openBossExt(&arch, dat))
-                    {
-                        restoreData(dat, arch, MODE_BOSS);
-                    }
-                    break;
-                case _back:
-                    loop = false;
-                    break;
-            }
-            FSUSER_CloseArchive(arch);
+            case sysOpts::expSys:
+                if(openSysSave(&arch, *sysTitle))
+                {
+                    createTitleDir(*sysTitle, MODE_SYSSAVE);
+                    backupData(*sysTitle, arch, MODE_SYSSAVE, false);
+                }
+                break;
+            case sysOpts::impSys:
+                if(openSysSave(&arch, *sysTitle))
+                {
+                    restoreData(*sysTitle, arch, MODE_SYSSAVE);
+                }
+                break;
+            case sysOpts::expExt:
+                if(openExtdata(&arch, *sysTitle, true))
+                {
+                    createTitleDir(*sysTitle, MODE_EXTDATA);
+                    backupData(*sysTitle, arch, MODE_EXTDATA, false);
+                }
+                break;
+            case sysOpts::impExt:
+                if(openExtdata(&arch, *sysTitle, true))
+                {
+                    restoreData(*sysTitle, arch, MODE_EXTDATA);
+                }
+                break;
+            case sysOpts::expBoss:
+                if(openBossExt(&arch, *sysTitle))
+                {
+                    createTitleDir(*sysTitle, MODE_BOSS);
+                    backupData(*sysTitle, arch, MODE_BOSS, false);
+                }
+                break;
+            case sysOpts::impBoss:
+                if(openBossExt(&arch, *sysTitle))
+                {
+                    restoreData(*sysTitle, arch, MODE_BOSS);
+                }
+                break;
+            case sysOpts::back:
+                state = states::STATE_NANDSELECT;
+                break;
         }
-        else if(up & KEY_B)
-            break;
-
-        killApp(up);
-
-        sf2d_start_frame(GFX_TOP, GFX_LEFT);
-            drawTopBar(info);
-            backupMenu.draw();
-        sf2d_end_frame();
-
-        sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
-        sf2d_end_frame();
-
-        sf2d_swapbuffers();
-
+        FSUSER_CloseArchive(arch);
     }
+    else if(down & KEY_B)
+        state = states::STATE_NANDSELECT;
+
+    killApp(down);
+
+    sf2d_start_frame(GFX_TOP, GFX_LEFT);
+        drawTopBar(info);
+        nBackupMenu.draw();
+    sf2d_end_frame();
+
+    sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
+    sf2d_end_frame();
+
+    sf2d_swapbuffers();
+
+
 }

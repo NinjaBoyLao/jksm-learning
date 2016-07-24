@@ -7,23 +7,29 @@
 class menuItem
 {
     public:
-        menuItem(const std::u32string s);
+        menuItem(const std::u32string s, bool center, int x);
+        void autoCenter();
+        void draw(int y, unsigned color);
 
         bool selected;
         std::u32string text;
+
+        int x;
 };
 
 class menu
 {
     public:
-        menu(unsigned sx, unsigned sy, bool sMulti);
+        menu(unsigned sx, unsigned sy, bool sMulti, bool _center);
         ~menu();
 
         void addItem(const char *a);
         void addItem(const std::u16string a);
         void addItem(const std::u32string a);
         int getSelected();
+        void setSelected(int sel);
         void reset();
+        void autoVert();
 
         unsigned getSize();
         unsigned getSelectCount();
@@ -31,15 +37,12 @@ class menu
 
         void draw();
 
-        void handleInput(u32 key);
+        void handleInput(u32 key, u32 held);
 
     private:
-        bool multi;
+        bool multi, center;
         std::vector<menuItem> opts;
-        int x, y, selected, start;
+        int x, y, selected, start, fc;
 };
-
-void loadArrow();
-void freeArrow();
 
 #endif // MENU_H

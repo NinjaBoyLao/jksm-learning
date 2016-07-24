@@ -1,7 +1,7 @@
 BasicInfo:
   Title                   : "JK's Save Manager"
   ProductCode             : "CTR-HB-JKSV"
-  Logo                    : Nintendo # Nintendo / Licensed / Distributed / iQue / iQueForSystem
+  Logo                    : Licensed # Nintendo / Licensed / Distributed / iQue / iQueForSystem
 
 RomFs:
   romfs
@@ -49,7 +49,7 @@ AccessControlInfo:
    #- CategorySystemSettings
    #- CardBoard
    #- ExportImportIvs
-   #- DirectSdmcWrite
+   - DirectSdmcWrite
    #- SwitchCleanup
    #- SaveDataMove
    #- Shop

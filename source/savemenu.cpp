@@ -4,6 +4,7 @@
 #include <string>
 
 #include "savemenu.h"
+#include "archive.h"
 #include "backup.h"
 #include "restore.h"
 #include "menu.h"
@@ -12,79 +13,93 @@
 #include "ui.h"
 #include "util.h"
 
-enum
+enum saveOpts
 {
-    _expSav,
-    _impSav,
-    _browseSav,
-    _delSav,
-    _back
+    expSav,
+    impSav,
+    browseSav,
+    delSV,
+    delSav,
+    back
 };
 
-void startSaveMenu(FS_Archive saveArch, const titleData dat)
-{
-    createTitleDir(dat, MODE_SAVE);
+static menu saveMenu(128, 80, false, true);
 
-    menu saveMenu(128, 80, false);
+void prepSaveMenu()
+{
     saveMenu.addItem("Export Save");
     saveMenu.addItem("Import Save");
     saveMenu.addItem("Browse SD for Data");
+    saveMenu.addItem("Delete Secure Value");
     saveMenu.addItem("Delete Save Data");
     saveMenu.addItem("Back");
 
-    std::u32string info = tou32(dat.name) + U" : Save Data";
+    saveMenu.autoVert();
+}
 
-    bool loop = true;
+void showSaveMenu()
+{
+    std::u32string info = curTitle->u32Name + U" : Save Data";
 
-    while(loop && !kill)
+    hidScanInput();
+
+    u32 down = hidKeysDown();
+
+    touchPosition p;
+    hidTouchRead(&p);
+
+    saveMenu.handleInput(down, 0);
+
+    if(down & KEY_A)
     {
-        hidScanInput();
-
-        u32 up = hidKeysUp();
-
-        touchPosition p;
-        hidTouchRead(&p);
-
-        saveMenu.handleInput(up);
-
-        killApp(up);
-
-        if(up & KEY_A)
+        FS_Archive saveArch;
+        switch(saveMenu.getSelected())
         {
-            switch(saveMenu.getSelected())
-            {
-                case _expSav:
-                    backupData(dat, saveArch, MODE_SAVE, false);
-                    break;
-                case _impSav:
-                    restoreData(dat, saveArch, MODE_SAVE);
-                    break;
-                case _browseSav:
-                    restoreDataSDPath(dat, saveArch, MODE_SAVE);
-                    break;
-                case _delSav:
-                    if(confirm("Are you sure you want to delete this title's current save data?"))
-                    {
-                        FSUSER_DeleteDirectoryRecursively(saveArch, fsMakePath(PATH_ASCII, "/"));
-                        FSUSER_ControlArchive(saveArch, ARCHIVE_ACTION_COMMIT_SAVE_DATA, NULL, 0, NULL, 0);
-                    }
-                    break;
-                case _back:
-                    loop = false;
-                    break;
-            }
+            case saveOpts::expSav:
+                if(openSaveArch(&saveArch, *curTitle, true))
+                {
+                    createTitleDir(*curTitle, MODE_SAVE);
+                    backupData(*curTitle, saveArch, MODE_SAVE, false);
+                }
+                break;
+            case saveOpts::impSav:
+                if(openSaveArch(&saveArch, *curTitle, true))
+                    restoreData(*curTitle, saveArch, MODE_SAVE);
+                break;
+            case saveOpts::browseSav:
+                if(openSaveArch(&saveArch, *curTitle, true))
+                    restoreDataSDPath(*curTitle, saveArch, MODE_SAVE);
+                break;
+            case saveOpts::delSV:
+                deleteSV(*curTitle);
+                break;
+            case saveOpts::delSav:
+                if(openSaveArch(&saveArch, *curTitle, true) && confirm("Are you sure you want to delete this title's current save data?"))
+                {
+                    FSUSER_DeleteDirectoryRecursively(saveArch, fsMakePath(PATH_ASCII, "/"));
+                    FSUSER_ControlArchive(saveArch, ARCHIVE_ACTION_COMMIT_SAVE_DATA, NULL, 0, NULL, 0);
+                }
+                break;
+            case saveOpts::back:
+                state = STATE_BACKUPMENU;
+                break;
         }
-        else if(up & KEY_B)
-            break;
-
-        sf2d_start_frame(GFX_TOP, GFX_LEFT);
-            drawTopBar(info);
-            saveMenu.draw();
-        sf2d_end_frame();
-
-        sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
-        sf2d_end_frame();
-
-        sf2d_swapbuffers();
+        FSUSER_CloseArchive(saveArch);
     }
+    else if(down & KEY_B)
+    {
+        state = STATE_BACKUPMENU;
+    }
+
+    killApp(down);
+
+    sf2d_start_frame(GFX_TOP, GFX_LEFT);
+    drawTopBar(info);
+    saveMenu.draw();
+    sf2d_end_frame();
+
+    sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
+    sf2d_end_frame();
+
+    sf2d_swapbuffers();
 }

@@ -13,30 +13,30 @@ bool confirm(const char *t)
 {
     bool ret = false;
 
-    button yes("Yes (A)", 40, 176);
-    button no("No (B)", 180, 176);
+    button yes("Yes (A)", 40, 176, 96, 32);
+    button no("No (B)", 180, 176, 96, 32);
     textbox back(24, 24, 280, 200, t);
     while(true)
     {
         hidScanInput();
 
-        u32 up = hidKeysUp();
+        u32 down = hidKeysDown();
 
         touchPosition p;
         hidTouchRead(&p);
 
-        if(yes.released(p) || (up & KEY_A))
+        if(yes.released(p) || (down & KEY_A))
         {
             ret = true;
             break;
         }
-        else if(no.released(p) || (up & KEY_B))
+        else if(no.released(p) || (down & KEY_B))
         {
             ret = false;
             break;
         }
 
-        killApp(up);
+        killApp(down);
 
         sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
             back.draw(false);
@@ -52,7 +52,7 @@ bool confirm(const char *t)
 
 void showMessage(const char *t)
 {
-    button ok("OK (A)", 116, 176);
+    button ok("OK (A)", 116, 176, 96, 32);
     textbox back(24, 24, 280, 200, t);
 
     while(true)
@@ -62,12 +62,12 @@ void showMessage(const char *t)
         touchPosition p;
         hidTouchRead(&p);
 
-        u32 up = hidKeysUp();
+        u32 down = hidKeysDown();
 
-        if(ok.released(p) || (up & KEY_A) || (up & KEY_B))
+        if(ok.released(p) || (down & KEY_A) || (down & KEY_B))
             break;
 
-        killApp(up);
+        killApp(down);
 
         sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
             back.draw(false);
@@ -109,6 +109,6 @@ void progressBar::draw(float cur)
     float xScale = (float)(prog * 128) / 100;
 
     back->draw(false);
-    sf2d_draw_texture_scale(progEmpty, back->X + 8, back->Y + 168, 128, 1);
-    sf2d_draw_texture_scale(progFull, back->X + 8, back->Y + 168, xScale, 1);
+    sf2d_draw_texture_scale(progEmpty, back->X + 8, back->Y + 160, 128, 1);
+    sf2d_draw_texture_scale(progFull, back->X + 8, back->Y + 160, xScale, 1);
 }

@@ -2,62 +2,50 @@
 
 #include <3ds.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sf2d.h>
 
-#include "key.h"
 #include "gstr.h"
 #include "global.h"
 #include "date.h"
 #include "textbox.h"
 
-std::string GetString()
+std::string GetString(const char *hint)
 {
-    //this object takes care of a lot
-    KeyBoard Str;
-    textbox Back(0, 0, 320, 240, "");
+    SwkbdState keyState;
+    char input[64];
 
-    bool Loop = true;
+    swkbdInit(&keyState, SWKBD_TYPE_NORMAL, 2, 64);
+    swkbdSetHintText(&keyState, hint);
+    swkbdSetFeatures(&keyState, SWKBD_PREDICTIVE_INPUT);
+    SwkbdDictWord dates[2];
+    swkbdSetDictWord(&dates[0], "2016", GetDate(FORMAT_YDM));
+    swkbdSetDictWord(&dates[1], "2016", GetDate(FORMAT_YMD));
+    swkbdSetDictionary(&keyState, dates, 2);
 
-    std::u32string info = U"Enter a name. Press A when finished.";
-    while(Loop && !kill)
+    swkbdInputText(&keyState, input, 64);
+
+    return std::string(input);
+}
+
+int getInt(const char *hint, int maxValue)
+{
+    SwkbdState keyState;
+    char input[4];
+
+    swkbdInit(&keyState, SWKBD_TYPE_NUMPAD, 2, 4);
+    swkbdSetHintText(&keyState, hint);
+
+    SwkbdButton pressed = swkbdInputText(&keyState, input, 4);
+    int ret;
+    //Cancel
+    if(pressed == SWKBD_BUTTON_LEFT)
+        ret = -1;
+    else
     {
-        hidScanInput();
-
-        u32 KeyUp = hidKeysUp();
-
-        Str.HandleInput();
-
-        if((KeyUp & KEY_START) || (KeyUp & KEY_A))
-        {
-            return Str.RetString();//return what's entered
-        }
-        else if(KeyUp & KEY_L)
-        {
-            Str.Add(GetDate(FORMAT_YDM));//add date
-        }
-        else if(KeyUp & KEY_R)
-        {
-            Str.Add(GetDate(FORMAT_YMD));
-        }
-        else if(KeyUp & KEY_B)
-        {
-            return "";//return nothing.
-        }
-
-        killApp(KeyUp);
-
-        sf2d_start_frame(GFX_TOP, GFX_LEFT);
-            drawTopBar(info);
-        sf2d_end_frame();
-
-        sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
-            Back.draw(false);
-            sftd_draw_text(font, 32, 32, RGBA8(0, 0, 0, 255), 12, Str.RetString().c_str());
-            Str.Print();
-        sf2d_end_frame();
-
-        sf2d_swapbuffers();
-
+        ret = strtol(input, NULL, 10);
+        if(ret > maxValue)
+            ret = maxValue;
     }
-    return "";
+    return ret;
 }

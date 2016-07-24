@@ -7,12 +7,15 @@
 #include "dir.h"
 
 std::u32string tou32(const std::u16string t);
-std::u32string modeText(int mode);
 std::u16string tou16(const char *t);
 std::string toString(const std::u16string t);
 
+std::u32string modeText(int mode);
+
+void writeErrorToBuff(u8 *buff, size_t bSize, unsigned error);
+
 void createTitleDir(const titleData t, int mode);
-void deleteSV(const titleData t);
+bool deleteSV(const titleData t);
 std::u16string getPath(int mode);
 
 void deleteExtdata(const titleData dat);
@@ -33,4 +36,9 @@ void sleep(int s);
 bool modeExtdata(int mode);
 
 bool fexists(const char *path);
-#endif // UTIL_G
+
+void fsStart();
+void fsEnd();
+
+void prepareMenus();
+#endif // UTIL_H

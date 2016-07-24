@@ -17,7 +17,9 @@ class titleData
         u32 high, low, unique, extdata;
         std::string prodCode;
         std::u16string name, nameSafe;
+        std::u32string u32Name;
         FS_MediaType media;
+        bool initd = false;
 
     private:
         smdh_s *smdh;

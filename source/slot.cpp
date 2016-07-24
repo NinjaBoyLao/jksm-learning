@@ -36,9 +36,12 @@ std::string GetSlot(bool nSlot, const titleData dat, int Mode)
 
     dirList list(sdArch, Path);
     if(list.count()==0 && !nSlot)
+    {
+        showMessage("Didn't find any data to import!");
         return "";
+    }
 
-    menu getSlot(88, 20, false);
+    menu getSlot(88, 20, false, true);
     //Go through dirs found and add them to menu
     for(unsigned i = 0; i < list.count(); i++)
     {
@@ -48,26 +51,27 @@ std::string GetSlot(bool nSlot, const titleData dat, int Mode)
     if(nSlot)
         getSlot.addItem("New");
 
-    button help("Help", 224, 208);
+    button help("Help", 224, 208, 96, 32);
 
     bool Loop = true;
     std::u32string info = tou32(dat.name) + modeText(Mode);
     std::string helpText = "Select a Folder. Press X to rename, Y to delete, and B to cancel.";
-    while(Loop && !kill)
+    while(Loop)
     {
         hidScanInput();
-        u32 KeyUp = hidKeysUp();
+        u32 down = hidKeysDown();
+        u32 held = hidKeysHeld();
 
         touchPosition pos;
         hidTouchRead(&pos);
 
-        getSlot.handleInput(KeyUp);
+        getSlot.handleInput(down, held);
 
-        if(KeyUp & KEY_A)
+        if(down & KEY_A)
         {
             if((unsigned)(getSlot.getSelected() + 1) > list.count() && nSlot)
             {
-                Ret = GetString();
+                Ret = GetString("Enter a name for the new folder.");
                 return Ret;
             }
             else
@@ -76,7 +80,7 @@ std::string GetSlot(bool nSlot, const titleData dat, int Mode)
                 return Ret;
             }
         }
-        else if(KeyUp & KEY_Y)
+        else if(down & KEY_Y)
         {
             unsigned Sel = getSlot.getSelected();
 
@@ -100,7 +104,7 @@ std::string GetSlot(bool nSlot, const titleData dat, int Mode)
                 }
             }
         }
-        else if(KeyUp & KEY_X)
+        else if(down & KEY_X)
         {
             unsigned Sel = getSlot.getSelected();
             if(Sel < list.count())
@@ -109,7 +113,7 @@ std::string GetSlot(bool nSlot, const titleData dat, int Mode)
                 oldPath += list.retItem(Sel);
 
                 std::u16string newPath = Path;
-                std::string newName = GetString();
+                std::string newName = GetString("Enter a new name for the folder.");
                 newPath.append(tou16(newName.c_str()));
 
                 FSUSER_RenameDirectory(sdArch, fsMakePath(PATH_UTF16, oldPath.data()), sdArch, fsMakePath(PATH_UTF16, newPath.data()));
@@ -128,12 +132,10 @@ std::string GetSlot(bool nSlot, const titleData dat, int Mode)
         {
             showMessage(helpText.c_str());
         }
-        else if(KeyUp & KEY_B)
+        else if(down & KEY_B)
         {
             return "";
         }
-
-        killApp(KeyUp);
 
         sf2d_start_frame(GFX_TOP, GFX_LEFT);
             drawTopBar(info);

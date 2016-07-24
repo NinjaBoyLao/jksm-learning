@@ -12,12 +12,11 @@ This is those buttons I use.
 sText = what button says
 sX = X position
 sY = Y position
-They're currently 96x32, but that can be changed and probably will be
 */
 class button
 {
     public:
-        button(const char *sText, int sX, int sY);
+        button(const char *sText, int sX, int sY, int sWidth, int sHeight);
         ~button();
         void draw();
         bool isOver(touchPosition p);
@@ -25,7 +24,7 @@ class button
 
     private:
         bool Pressed;
-        int X, Y;
+        int X, Y, width, height;
         textbox *Box;
         touchPosition Prev;
 };

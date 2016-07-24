@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <sf2d.h>
 #include <sftd.h>
+#include <unistd.h>
+#include <sys/stat.h>
 #include <vector>
 
 #include "font_ttf.h"
@@ -21,7 +23,6 @@ void loadImgs()
     bar = sf2d_create_texture_mem_RGBA8(TopBar.pixel_data, TopBar.width, TopBar.height, TEXFMT_RGBA8, SF2D_PLACE_RAM);
     textboxInit();
     progressBarInit();
-    loadArrow();
 }
 
 void freeImgs()
@@ -29,12 +30,11 @@ void freeImgs()
     sf2d_free_texture(bar);
     textboxExit();
     progressBarExit();
-    freeArrow();
 }
 
 void loadCol()
 {
-    FILE *colBin = fopen("/JKSV/colBin", "rb");
+    FILE *colBin = fopen("colBin", "rb");
 
     for(int i = 0; i < 3; i++)
         clearColor[i] = fgetc(colBin);
@@ -48,7 +48,7 @@ void loadCol()
 
 void changeBuffSize()
 {
-    FILE *bSize = fopen("/JKSV/buff_size", "rb");
+    FILE *bSize = fopen("buff_size", "rb");
 
     buff_size = 0;
     for(int i = 0; i < 4; i++)
@@ -65,12 +65,14 @@ void createDir(const char *path)
 
 void sysInit()
 {
-    if(fexists("/JKSV/colBin"))
-        loadCol();
-    if(fexists("/JKSV/buff_size"))
-        changeBuffSize();
+    mkdir("/JKSV", 0777);
 
-    loadFilterList();
+    chdir("/JKSV");
+
+    if(fexists("colBin"))
+        loadCol();
+    if(fexists("buff_size"))
+        changeBuffSize();
 
     //Start sf2d
     sf2d_init();
@@ -85,8 +87,8 @@ void sysInit()
     //Start sftd
     sftd_init();
     //Load font
-    if(fexists("/JKSV/font.ttf"))
-        font = sftd_load_font_file("/JKSV/font.ttf");
+    if(fexists("font.ttf"))
+        font = sftd_load_font_file("font.ttf");
     else
         font = sftd_load_font_mem(font_ttf, font_ttf_size);
 
@@ -95,6 +97,10 @@ void sysInit()
     aptInit();
     srvInit();
     hidInit();
+    acInit();
+    httpcInit(0);
+
+    loadFilterList();
 
     //Open SDMC archive
     Result Res = FSUSER_OpenArchive(&sdArch, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""));
@@ -103,13 +109,13 @@ void sysInit()
         showMessage("Error opening SDMC archive!");
     }
 
-    createDir("/JKSV");
-
     createDir("/JKSV/Saves");
     createDir("/JKSV/ExtData");
     createDir("/JKSV/SysSave");
     createDir("/JKSV/Boss");
     createDir("/JKSV/Shared");
+
+    prepareMenus();
 }
 
 void sysExit()
@@ -122,6 +128,8 @@ void sysExit()
     aptExit();
     srvExit();
     hidExit();
+    acExit();
+    httpcExit();
 
     freeImgs();
 

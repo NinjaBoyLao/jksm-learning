@@ -4,6 +4,7 @@
 #include <string>
 
 #include "extmenu.h"
+#include "archive.h"
 #include "titledata.h"
 #include "backup.h"
 #include "restore.h"
@@ -12,71 +13,96 @@
 #include "util.h"
 #include "menu.h"
 
-enum
+enum extOpts
 {
-    _expExt,
-    _impExt,
-    _browseExt,
-    _back
+    expExt,
+    impExt,
+    browseExt,
+    delExt,
+    back
 };
 
-void startExtMenu(FS_Archive arch, const titleData dat)
-{
-    createTitleDir(dat, MODE_EXTDATA);
+const char * extDataConfirm = "Would you like to try to create Extra Data for this title?";
 
-    menu extMenu(128, 80, false);
+static menu extMenu(128, 80, false, true);
+
+void prepExtMenu()
+{
     extMenu.addItem("Export ExtData");
     extMenu.addItem("Import ExtData");
     extMenu.addItem("Browse for ExtData");
-    //I need to get this working right again.
-    //extMenu.addItem("Delete ExtData");
+    extMenu.addItem("Delete ExtData");
     extMenu.addItem("Back");
 
-    std::u32string info = tou32(dat.name) + U" : Extra Data";
+    extMenu.autoVert();
+}
 
-    bool loop = true;
-    while(loop && !kill)
+void showExtMenu()
+{
+    std::u32string info = curTitle->u32Name + U" : Extra Data";
+
+    hidScanInput();
+
+    u32 down = hidKeysDown();
+
+    touchPosition p;
+    hidTouchRead(&p);
+
+    extMenu.handleInput(down, 0);
+
+    killApp(down);
+
+    if(down & KEY_A)
     {
-        hidScanInput();
-
-        u32 up = hidKeysUp();
-
-        touchPosition p;
-        hidTouchRead(&p);
-
-        extMenu.handleInput(up);
-
-        killApp(up);
-
-        if(up & KEY_A)
+        FS_Archive extData;
+        switch(extMenu.getSelected())
         {
-            switch(extMenu.getSelected())
-            {
-                case _expExt:
-                    backupData(dat, arch, MODE_EXTDATA, false);
-                    break;
-                case _impExt:
-                    restoreData(dat, arch, MODE_EXTDATA);
-                    break;
-                case _browseExt:
-                    restoreDataSDPath(dat, arch, MODE_EXTDATA);
-                    break;
-                case _back:
-                    loop = false;
-                    break;
-            }
+            case extOpts::expExt:
+                if(openExtdata(&extData, *curTitle, true))
+                {
+                    createTitleDir(*curTitle, MODE_EXTDATA);
+                    backupData(*curTitle, extData, MODE_EXTDATA, false);
+                }
+                break;
+            case extOpts::impExt:
+                if(openExtdata(&extData, *curTitle, true))
+                    restoreData(*curTitle, extData, MODE_EXTDATA);
+                else
+                {
+                    if(confirm(extDataConfirm))
+                        createExtData(*curTitle);
+                }
+                break;
+            case extOpts::browseExt:
+                if(openExtdata(&extData, *curTitle, true))
+                    restoreDataSDPath(*curTitle, extData, MODE_EXTDATA);
+                else
+                {
+                    if(confirm(extDataConfirm))
+                        createExtData(*curTitle);
+                }
+                break;
+            case extOpts::delExt:
+                if(confirm("Are you sure you want to delete this title's extdata?"))
+                    deleteExtdata(*curTitle);
+                break;
+            case extOpts::back:
+                state = STATE_BACKUPMENU;
+                break;
         }
-        else if(up & KEY_B)
-            break;
-
-        sf2d_start_frame(GFX_TOP, GFX_LEFT);
-            drawTopBar(info);
-            extMenu.draw();
-        sf2d_end_frame();
-
-        sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
-        sf2d_end_frame();
-
-        sf2d_swapbuffers();
+        FSUSER_CloseArchive(extData);
     }
+
+    else if(down & KEY_B)
+        state = STATE_BACKUPMENU;
+
+    sf2d_start_frame(GFX_TOP, GFX_LEFT);
+    drawTopBar(info);
+    extMenu.draw();
+    sf2d_end_frame();
+
+    sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
+    sf2d_end_frame();
+
+    sf2d_swapbuffers();
 }

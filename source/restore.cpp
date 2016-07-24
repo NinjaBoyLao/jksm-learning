@@ -61,7 +61,7 @@ void copyFiletoArch(FS_Archive arch, const std::u16string from, const std::u16st
         sf2d_end_frame();
 
         sf2d_swapbuffers();
-    }while(read > 0);
+    }while(offset < size);
 
     delete[] buff;
 
@@ -133,7 +133,16 @@ bool restoreData(const titleData dat, FS_Archive arch, int mode)
         {
             showMessage("Error committing save data!");
         }
+        //If we're running under something from the hbl, end the session, delete the SV and start it again.
+        if(hbl)
+            fsEnd();
+
+        deleteSV(dat);
+
+        if(hbl)
+            fsStart();
     }
+
 
     showMessage("Complete!");
 

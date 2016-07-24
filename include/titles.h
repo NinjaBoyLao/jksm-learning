@@ -10,4 +10,6 @@ void nandTitlesInit();
 extern std::vector<titleData> sdTitle;
 extern std::vector<titleData> nandTitle;
 
+extern bool refreshed;
+
 #endif // TITLES_H

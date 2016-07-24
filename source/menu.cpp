@@ -10,31 +10,37 @@
 
 #define FONT_SIZE 12
 
-sf2d_texture *arrow;
-
-void loadArrow()
-{
-    arrow = sf2d_create_texture_mem_RGBA8(arrow_img.pixel_data, arrow_img.width, arrow_img.height, TEXFMT_RGBA8, SF2D_PLACE_RAM);
-}
-
-void freeArrow()
-{
-    sf2d_free_texture(arrow);
-}
-
-menuItem::menuItem(const std::u32string s)
+menuItem::menuItem(const std::u32string s, bool center, int _x)
 {
     selected = false;
     text.assign(s);
+    if(center)
+        autoCenter();
+    else
+        x = _x;
 }
 
-menu::menu(unsigned sx, unsigned sy, bool sMulti)
+void menuItem::autoCenter()
+{
+    x = (400 / 2) - (sftd_get_wtext_width(font, 12, (wchar_t *)text.data()) / 2);
+    if(x < 0)
+        x = 0;
+}
+
+void menuItem::draw(int y, unsigned color)
+{
+    sftd_draw_wtext(font, x, y, color, 12, (wchar_t *)text.data());
+}
+
+menu::menu(unsigned sx, unsigned sy, bool sMulti, bool _center)
 {
     x = sx;
     y = sy;
     multi = sMulti;
+    center = _center;
     selected = 0;
     start = 0;
+    fc = 0;
 }
 
 menu::~menu()
@@ -51,7 +57,7 @@ void menu::addItem(const char *a)
     std::u32string t;
     t.assign(tmp);
 
-    menuItem add(t);
+    menuItem add(t, center, x);
 
     opts.push_back(add);
 
@@ -67,7 +73,7 @@ void menu::addItem(const std::u16string a)
     std::u32string t;
     t.assign(tmp);
 
-    menuItem add(t);
+    menuItem add(t, center, x);
 
     opts.push_back(add);
 
@@ -85,29 +91,35 @@ void menu::draw()
         //Scrolling needs start set
         length = start + 15;
 
-    //For when using multiple menus
     for(i = start; i < length; i++)
     {
-        //\x1b[COLOR;1m = bold color.
         if(i == selected)
         {
-            sf2d_draw_texture(arrow, x, (y + 3) + (i - start) * 14);
-            sftd_draw_wtext(font, x + 24, y + ((i - start) * 14), RGBA8(selColor[0], selColor[1], selColor[2], 255), FONT_SIZE, (wchar_t *)opts[i].text.data());
+            opts[i].draw(y + ((i - start) * 14), RGBA8(selColor[0], selColor[1], selColor[2], 255));
         }
         else if(opts[i].selected)
-            sftd_draw_wtext(font, x + 24, y + ((i - start) * 14), RGBA8(200, 0, 0, 255), FONT_SIZE, (wchar_t *)opts[i].text.data());
+            opts[i].draw(y + ((i - start) * 14), RGBA8(200, 0, 0, 255));
         else
-            sftd_draw_wtext(font, x + 24, y + ((i - start) * 14), RGBA8(unSelColor[0], unSelColor[1], unSelColor[2], 255), FONT_SIZE, (wchar_t *)opts[i].text.data());
+            opts[i].draw(y + ((i - start) * 14), RGBA8(unSelColor[0], unSelColor[1], unSelColor[2], 255));
     }
 
 }
 
-void menu::handleInput(u32 key)
+void menu::handleInput(u32 key, u32 held)
 {
     //Honestly. I don't even know anymore.
     //I stopped touching this. It works, but it's a mess.
+
+    //keep frame count for scrolling
+    if( (held & KEY_UP) || (held & KEY_DOWN))
+        fc++;
+    else
+        fc = 0;
+    if(fc > 10)
+        fc = 0;
+
     int size = opts.size() - 1;
-    if(key & KEY_UP)
+    if((key & KEY_UP) || ((held & KEY_UP) && fc==10))
     {
         selected--;
         if(selected < 0)
@@ -120,7 +132,7 @@ void menu::handleInput(u32 key)
         else if(selected == size && size > 15)
             start = size - 14;
     }
-    else if(key & KEY_DOWN)
+    else if((key & KEY_DOWN) || ((held & KEY_DOWN) && fc==10))
     {
         selected++;
         if(selected > size)
@@ -177,9 +189,25 @@ void menu::reset()
     opts.clear();
 }
 
+void menu::autoVert()
+{
+
+    unsigned usedVert;
+    if(getSize() > 15)
+        usedVert = 15 * 14;
+    else
+        usedVert = getSize() * 14;
+    y = 16 + (224 / 2) - (usedVert / 2);
+}
+
 int menu::getSelected()
 {
     return selected;
+}
+
+void menu::setSelected(int sel)
+{
+    selected = sel;
 }
 
 unsigned menu::getSize()

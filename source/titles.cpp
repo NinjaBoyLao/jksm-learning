@@ -16,6 +16,7 @@
 std::vector<titleData> sdTitle;
 std::vector<titleData> nandTitle;
 
+bool refreshed = false;
 
 struct
 {
@@ -31,19 +32,42 @@ struct
     }
 } sortTitles;
 
+bool checkHigh(u64 id)
+{
+    u32 high = id >> 32;
+    if(high == 0x00040000 || high == 0x00040002)
+        return true;
+
+    return false;
+}
+
+extern void prepSDSelect();
+
 void sdTitlesInit()
 {
     //for refresh games
     sdTitle.clear();
-    if(fexists("/JKSV/titles"))
+    if(fexists("titles"))
     {
-        FILE *read = dbOpen("/JKSV/titles");
-        u32 count = dbGetCount(read);
+        FILE *read = dbOpen("titles");
 
-        for(unsigned i = 0; i < count; i++)
-            sdTitle.push_back(dbGetData(read));
+        //Check to make sure cache is updated since I changed it.
+        if(dbGetRev(read)==1)
+        {
+            u32 count = dbGetCount(read);
 
-        fclose(read);
+            for(unsigned i = 0; i < count; i++)
+                sdTitle.push_back(dbGetData(read));
+
+            fclose(read);
+        }
+        else
+        {
+            fclose(read);
+            remove("titles");
+            sdTitlesInit();
+            return;
+        }
     }
     else
     {
@@ -58,10 +82,9 @@ void sdTitlesInit()
         progressBar load((float)count, "Loading titles...");
         for(unsigned i = 0; i < count; i++)
         {
-            u32 high = (u32)(ids[i] >> 32);
             //0x00040000 = games
             //0x00040002 = demos
-            if( ((high==0x00040000 || high==0x00040002) && !hbFilter(ids[i])) || devMode)
+            if( (checkHigh(ids[i]) && !hbFilter(ids[i])) || devMode)
             {
                 titleData newTitle;
                 if(newTitle.init(ids[i], MEDIATYPE_SD))
@@ -78,12 +101,14 @@ void sdTitlesInit()
 
         std::sort(sdTitle.begin(), sdTitle.end(), sortTitles);
 
-        FILE *db = dbCreate("/JKSV/titles");
-        dbWriteCount(db, sdTitle.size());
+        FILE *db = dbCreate("titles");
+        dbWriteCount(db, sdTitle.size(), 1);
         for(unsigned i = 0; i < sdTitle.size(); i++)
             dbWriteData(db, sdTitle[i]);
         fclose(db);
     }
+
+    prepSDSelect();
 }
 
 bool nandFilter(u64 id)
@@ -105,22 +130,34 @@ void sysSaveRedirect(titleData *dat)
         dat->unique = 0x0000008F;
 }
 
+extern void prepNandSelect();
+
 void nandTitlesInit()
 {
     nandTitle.clear();
-    if(fexists("/JKSV/nand"))
+    if(fexists("nand"))
     {
-        FILE *read = dbOpen("/JKSV/nand");
-        u32 count = dbGetCount(read);
+        FILE *read = dbOpen("nand");
 
-        for(unsigned i = 0; i < count; i++)
+        if(dbGetRev(read)==1)
         {
-            titleData newNand = dbGetData(read);
-            sysSaveRedirect(&newNand);
-            nandTitle.push_back(newNand);
-        }
+            u32 count = dbGetCount(read);
 
-        fclose(read);
+            for(unsigned i = 0; i < count; i++)
+            {
+                titleData newNand = dbGetData(read);
+                sysSaveRedirect(&newNand);
+                nandTitle.push_back(newNand);
+            }
+            fclose(read);
+        }
+        else
+        {
+            fclose(read);
+            remove("nand");
+            nandTitlesInit();
+            return;
+        }
     }
     else
     {
@@ -153,10 +190,12 @@ void nandTitlesInit()
 
         std::sort(nandTitle.begin(), nandTitle.end(), sortTitles);
 
-        FILE *nand = dbCreate("/JKSV/nand");
-        dbWriteCount(nand, nandTitle.size());
+        FILE *nand = dbCreate("nand");
+        dbWriteCount(nand, nandTitle.size(), 1);
         for(unsigned i = 0; i < nandTitle.size(); i++)
             dbWriteData(nand, nandTitle[i]);
         fclose(nand);
     }
+
+    prepNandSelect();
 }

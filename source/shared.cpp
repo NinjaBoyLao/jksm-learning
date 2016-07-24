@@ -23,7 +23,7 @@ std::string descs[] =
     "This means go back."
 };
 
-enum
+enum sharedOpts
 {
     e0,
     f1,
@@ -32,72 +32,82 @@ enum
     fb,
     fc,
     fd,
-    fe,
-    back
+    fe
 };
 
-enum
+enum sharedBack
 {
-    _exp,
-    _imp,
+    exp,
+    imp,
     _back
 };
 
-void sharedBackupMenu(const titleData dat, FS_Archive arch)
+titleData selShared;
+
+static menu sharedBackMenu(136, 96, false, true);
+
+void prepSharedBackMenu()
 {
-    menu backupMenu(136, 80, false);
-    backupMenu.addItem("Export Data");
-    backupMenu.addItem("Import Data");
-    backupMenu.addItem("Back");
+    sharedBackMenu.addItem("Export Data");
+    sharedBackMenu.addItem("Import Data");
+    sharedBackMenu.addItem("Back");
 
-    std::u32string info = tou32(dat.nameSafe) + U" : Shared Extdata";
-
-    bool loop = true;
-    while(loop && !kill)
-    {
-        hidScanInput();
-
-        u32 up = hidKeysUp();
-
-        backupMenu.handleInput(up);
-
-        if(up & KEY_A)
-        {
-            switch(backupMenu.getSelected())
-            {
-                case _exp:
-                    createTitleDir(dat, MODE_SHARED);
-                    backupData(dat, arch, MODE_SHARED, false);
-                    break;
-                case _imp:
-                    restoreData(dat, arch, MODE_SHARED);
-                    break;
-                case _back:
-                    loop = false;
-                    break;
-            }
-        }
-        else if(up & KEY_B)
-            break;
-
-        //oops forgot this last time
-        killApp(up);
-
-        sf2d_start_frame(GFX_TOP, GFX_LEFT);
-            drawTopBar(info);
-            backupMenu.draw();
-        sf2d_end_frame();
-
-        sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
-        sf2d_end_frame();
-
-        sf2d_swapbuffers();
-    }
+    sharedBackMenu.autoVert();
 }
 
-void sharedExtManager()
+void sharedBackupMenu()
 {
-    menu sharedMenu(128, 72, false);
+    std::u32string info = tou32(selShared.nameSafe) + U" : Shared Extdata";
+
+    hidScanInput();
+
+    u32 down = hidKeysDown();
+
+    sharedBackMenu.handleInput(down, 0);
+
+    if(down & KEY_A)
+    {
+        FS_Archive arch;
+        switch(sharedBackMenu.getSelected())
+        {
+            case sharedBack::exp:
+                if(openSharedExt(&arch, selShared.extdata))
+                {
+                    createTitleDir(selShared, MODE_SHARED);
+                    backupData(selShared, arch, MODE_SHARED, false);
+                }
+                break;
+            case sharedBack::imp:
+                if(openSharedExt(&arch, selShared.extdata))
+                    restoreData(selShared, arch, MODE_SHARED);
+                break;
+            case sharedBack::_back:
+                state = states::STATE_SHARED;
+                break;
+        }
+        FSUSER_CloseArchive(arch);
+    }
+    else if(down & KEY_B)
+        state = states::STATE_SHARED;
+
+    //oops forgot this last time
+    killApp(down);
+
+    sf2d_start_frame(GFX_TOP, GFX_LEFT);
+        drawTopBar(info);
+        sharedBackMenu.draw();
+    sf2d_end_frame();
+
+    sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
+    sf2d_end_frame();
+
+    sf2d_swapbuffers();
+}
+
+static menu sharedMenu(128, 72, false, true);
+
+void prepSharedMenu()
+{
     sharedMenu.addItem("E0000000");
     sharedMenu.addItem("F0000001");
     sharedMenu.addItem("F0000002");
@@ -106,82 +116,75 @@ void sharedExtManager()
     sharedMenu.addItem("F000000C");
     sharedMenu.addItem("F000000D");
     sharedMenu.addItem("F000000E");
-    sharedMenu.addItem("Back");
 
+    sharedMenu.autoVert();
+}
+
+void sharedExtManager()
+{
     std::u32string info = U"Shared ExtData";
-    bool loop = true;
-    while(loop && !kill)
+
+    hidScanInput();
+
+    u32 down = hidKeysDown();
+    u32 held = hidKeysHeld();
+
+    sharedMenu.handleInput(down, held);
+
+    if(down & KEY_A)
     {
-        hidScanInput();
-
-        u32 up = hidKeysUp();
-
-        sharedMenu.handleInput(up);
-
-        if(up & KEY_A)
+        titleData sharedDat;
+        switch(sharedMenu.getSelected())
         {
-            FS_Archive shared;
-            titleData sharedDat;
-            bool opened = false;
-            switch(sharedMenu.getSelected())
-            {
-                case e0:
-                    opened = openSharedExt(&shared, 0xE0000000);
-                    sharedDat.nameSafe = tou16("E0000000");
-                    break;
-                case f1:
-                    opened = openSharedExt(&shared, 0xF0000001);
-                    sharedDat.nameSafe = tou16("F0000001");
-                    break;
-                case f2:
-                    opened = openSharedExt(&shared, 0xF0000002);
-                    sharedDat.nameSafe = tou16("F0000002");
-                    break;
-                case f9:
-                    opened = openSharedExt(&shared, 0xF0000009);
-                    sharedDat.nameSafe = tou16("F0000009");
-                    break;
-                case fb:
-                    opened = openSharedExt(&shared, 0xF000000B);
-                    sharedDat.nameSafe = tou16("F000000B");
-                    break;
-                case fc:
-                    opened = openSharedExt(&shared, 0xF000000C);
-                    sharedDat.nameSafe = tou16("F000000C");
-                    break;
-                case fd:
-                    opened = openSharedExt(&shared, 0xF000000D);
-                    sharedDat.nameSafe = tou16("F000000D");
-                    break;
-                case fe:
-                    opened = openSharedExt(&shared, 0xF000000E);
-                    sharedDat.nameSafe = tou16("F000000E");
-                    break;
-                case back:
-                    loop = false;
-                    break;
-            }
-
-            if(opened)
-            {
-                sharedBackupMenu(sharedDat, shared);
-            }
-            FSUSER_CloseArchive(shared);
+            case sharedOpts::e0:
+                sharedDat.extdata = 0xE0000000;
+                sharedDat.nameSafe = tou16("E0000000");
+                break;
+            case sharedOpts::f1:
+                sharedDat.extdata =  0xF0000001;
+                sharedDat.nameSafe = tou16("F0000001");
+                break;
+            case sharedOpts::f2:
+                sharedDat.extdata = 0xF0000002;
+                sharedDat.nameSafe = tou16("F0000002");
+                break;
+            case sharedOpts::f9:
+                sharedDat.extdata = 0xF0000009;
+                sharedDat.nameSafe = tou16("F0000009");
+                break;
+            case sharedOpts::fb:
+                sharedDat.extdata = 0xF000000B;
+                sharedDat.nameSafe = tou16("F000000B");
+                break;
+            case sharedOpts::fc:
+                sharedDat.extdata = 0xF000000C;
+                sharedDat.nameSafe = tou16("F000000C");
+                break;
+            case sharedOpts::fd:
+                sharedDat.extdata = 0xF000000D;
+                sharedDat.nameSafe = tou16("F000000D");
+                break;
+            case sharedOpts::fe:
+                sharedDat.extdata = 0xF000000E;
+                sharedDat.nameSafe = tou16("F000000E");
+                break;
         }
-        else if(up & KEY_B)
-            break;
-
-        killApp(up);
-
-        sf2d_start_frame(GFX_TOP, GFX_LEFT);
-            drawTopBar(info);
-            sharedMenu.draw();
-        sf2d_end_frame();
-
-        sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
-            sftd_draw_text_wrap(font, 0, 0, RGBA8(255, 255, 255, 255), 12, 320, descs[sharedMenu.getSelected()].c_str());
-        sf2d_end_frame();
-
-        sf2d_swapbuffers();
+        selShared = sharedDat;
+        state = states::STATE_SHAREDBACKUP;
     }
+    else if(down & KEY_B)
+        state = states::STATE_MAINMENU;
+
+    killApp(down);
+
+    sf2d_start_frame(GFX_TOP, GFX_LEFT);
+    drawTopBar(info);
+    sharedMenu.draw();
+    sf2d_end_frame();
+
+    sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
+    sftd_draw_text_wrap(font, 0, 0, RGBA8(255, 255, 255, 255), 12, 320, descs[sharedMenu.getSelected()].c_str());
+    sf2d_end_frame();
+
+    sf2d_swapbuffers();
 }

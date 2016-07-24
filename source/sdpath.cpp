@@ -56,27 +56,28 @@ std::u16string getSDPath()
     std::u16string cPath = (char16_t *)"/";
 
     //Menu for browsing
-    menu sdBrowse(8, 16, false);
+    menu sdBrowse(8, 16, false, false);
 
     //get listing and copy to sdBrowse
     dirList sdList(sdArch, cPath);
     copyListToMenu(&sdBrowse, sdList);
 
-    button help("Help", 224, 208);
+    button help("Help", 224, 208, 96, 32);
     std::string helpText = "Locate directory containing the save files you want to import. Press Y when finished. Press X to cancel. ";
 
     while(1)
     {
         hidScanInput();
 
-        u32 up = hidKeysUp();
+        u32 down = hidKeysDown();
+        u32 held = hidKeysHeld();
 
-        sdBrowse.handleInput(up);
+        sdBrowse.handleInput(down, held);
 
         touchPosition p;
         hidTouchRead(&p);
 
-        if(up & KEY_A)
+        if(down & KEY_A)
         {
             unsigned sel = sdBrowse.getSelected();
             if(sel == 0)
@@ -84,9 +85,9 @@ std::u16string getSDPath()
             else if(sdList.isDir(sel - 1))
                 enterDir(&sdList, &sdBrowse, &cPath);
         }
-        else if(up & KEY_B)
+        else if(down & KEY_B)
             upDir(&sdList, &sdBrowse, &cPath);
-        else if(up & KEY_Y)
+        else if(down & KEY_Y)
         {
             if(sdList.isDir(sdBrowse.getSelected() - 1) && confirm("Use this directory to restore? Everything in it will be copied to current game's save archive. "))
             {
@@ -95,7 +96,7 @@ std::u16string getSDPath()
                 break;
             }
         }
-        else if(up & KEY_X)
+        else if(down & KEY_X)
         {
             cPath = (char16_t *)"";
             break;

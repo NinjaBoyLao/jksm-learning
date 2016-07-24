@@ -47,8 +47,6 @@ void copyFileToSD(FS_Archive save, const std::u16string from, const std::u16stri
     evenString(&copyString);
     progressBar fileProg((float)fSize, copyString.c_str());
 
-    bool ignoreError = false;
-
     //loop through file until finished
     do
     {
@@ -56,37 +54,22 @@ void copyFileToSD(FS_Archive save, const std::u16string from, const std::u16stri
 
         hidScanInput();
 
-        u32 up = hidKeysUp();
+        u32 down = hidKeysDown();
 
         res = FSFILE_Read(saveFile, &read, offset, buff, buff_size);
-        if(res==0 || ignoreError)
+        if(res==0)
         {
-            if(devMode && ignoreError)
-            {
-                char mess[256];
-                sprintf(mess, "FSFILE_Read reported %u bytes read.", (unsigned)read);
-                showMessage(mess);
-            }
             FSFILE_Write(sdFile, NULL, offset, buff, read, FS_WRITE_FLUSH);
-            offset += read;
         }
         else
         {
-            char tmp[256];
-            sprintf(tmp, "FSFILE_Read returned error 0x%08X on '%s'. Would you like to ignore it and try anyway? Ignoring it CAN crash this program!", (unsigned)res, toString(from).c_str());
-            std::string error = tmp;
-            evenString(&error);
-            ignoreError = confirm(error.c_str());
-            if(!ignoreError)
-            {
-                FSFILE_Close(sdFile);
-                FSUSER_DeleteFile(sdArch, fsMakePath(PATH_UTF16, to.data()));
-                break;
-            }
+            writeErrorToBuff(buff, read, (unsigned)res);
+            FSFILE_Write(sdFile, NULL, offset, buff, read, FS_WRITE_FLUSH);
         }
-
-        if(up & KEY_B)
+        if(down & KEY_B)
             break;
+
+        offset += read;
 
         sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
             fileProg.draw(offset);
@@ -94,7 +77,7 @@ void copyFileToSD(FS_Archive save, const std::u16string from, const std::u16stri
 
         sf2d_swapbuffers();
     }
-    while(read > 0);
+    while(offset < fSize);
 
     delete[] buff;
 

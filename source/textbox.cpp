@@ -30,15 +30,15 @@ textbox::textbox(unsigned x, unsigned y, unsigned width, unsigned height, const 
     Y = y;
     Width = width;
     Height = height;
+
+    if(Width > 32)
+        xScale = (float)((Width - 32) / 16);
+    if(Height > 32)
+        yScale = (float)((Height - 32) / 16);
 }
 
 void textbox::draw(bool Pressed)
 {
-    float xScale, yScale;
-
-    xScale = (float)((Width - 32) / 16);
-    yScale = (float)((Height - 32) / 16);
-
     sf2d_texture *UseTex;
 
     if(Pressed)

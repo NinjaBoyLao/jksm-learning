@@ -6,6 +6,7 @@
 #include "titledata.h"
 #include "global.h"
 #include "smdh.h"
+#include "util.h"
 
 const char16_t verboten[] = { L' ', L'.', L',', L'/', L'\\', L'<', L'>', L':', L'"', L'|', L'?', L'*'};//12
 
@@ -41,9 +42,12 @@ u32 extdataRedirect(u32 low)
     //Pokemon OR
     else if(low==0x0011C400)
         return 0x000011C5;
-    //Fire Emblem Conquest + SE
+    //Fire Emblem Conquest + SE NA
     else if(low==0x00179600 || low==0x00179800)
         return 0x00001794;
+    //FE Conquest + SE EURO
+    else if(low==0x00179700 || low==0x0017A800)
+        return 0x00001795;
 
     return (low >> 8);
 }
@@ -66,18 +70,26 @@ bool titleData::init(u64 _id, FS_MediaType mediaType)
         return false;
 
     name.assign((char16_t *)smdh->applicationTitles[1].shortDescription);
+    u32Name = tou32(name);
     nameSafe = safeTitle(name);
 
+    delete smdh;
+
     //Product code
-    char tmp[32];
+    char tmp[16];
     AM_GetTitleProductCode(media, id, tmp);
     prodCode.assign(tmp);
+
+    initd = true;
 
     return true;
 }
 
 void titleData::initId()
 {
+    high = id >> 32;
+    low = id;
+
     unique = (low >> 8);
 
     extdata = extdataRedirect(low);
@@ -85,6 +97,9 @@ void titleData::initId()
     media = MEDIATYPE_SD;
 
     nameSafe = safeTitle(name);
+    u32Name = tou32(name);
+
+    initd = true;
 }
 
 void titleData::printInfo()

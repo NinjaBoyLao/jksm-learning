@@ -5,19 +5,22 @@
 #include <string>
 
 #include "archive.h"
-#include "savemenu.h"
-#include "extmenu.h"
+#include "backup.h"
+#include "restore.h"
 #include "menu.h"
 #include "titledata.h"
 #include "global.h"
 #include "util.h"
 #include "ui.h"
 
-enum
+enum hblOpts
 {
-    _saveOpts,
-    _extDataOpts,
-    _exit
+    expSav,
+    impSav,
+    delSV,
+    expExt,
+    impExt,
+    exit
 };
 
 bool openSaveArch3dsx(FS_Archive *arch)
@@ -32,73 +35,84 @@ bool openSaveArch3dsx(FS_Archive *arch)
     return true;
 }
 
-void fsStart()
-{
-   Handle fs;
-   srvGetServiceHandleDirect(&fs, "fs:USER");
-   FSUSER_Initialize(fs);
-   fsUseSession(fs);
-}
-
-void fsEnd()
-{
-    fsEndUseSession();
-}
-
 void start3dsxMode()
 {
-    menu opts(128, 96, false);
-    opts.addItem("Save Data Options");
-    opts.addItem("Extra Data Options");
-    opts.addItem("Exit");
-
     u64 id;
     APT_GetProgramID(&id);
 
     //This doesn't work if you start the FS session.
     titleData data;
     if(!data.init(id, MEDIATYPE_GAME_CARD))
-        if(!data.init(id, MEDIATYPE_SD))
-            data.init(id, MEDIATYPE_NAND);
+        data.init(id, MEDIATYPE_SD);
 
-    std::u32string info = tou32(data.name) + U" : 3DSX Mode";
+    menu hblMenu(0, 80, false, true);
+    hblMenu.addItem("Export Save");
+    hblMenu.addItem("Import Save");\
+    hblMenu.addItem("Delete Secure Value");
+    hblMenu.addItem("Export ExtData");
+    hblMenu.addItem("Import ExtData");
+    hblMenu.addItem("Exit");
+
+    std::u32string info = data.u32Name + U" : 3DSX Mode";
 
     fsStart();
 
-    while(!kill)
+    while(aptMainLoop() && !kill)
     {
         hidScanInput();
 
-        u32 up = hidKeysUp();
+        u32 down = hidKeysDown();
 
         touchPosition p;
         hidTouchRead(&p);
 
-        opts.handleInput(up);
-        if(up & KEY_A)
+        hblMenu.handleInput(down, 0);
+
+        if(down & KEY_A)
         {
-            FS_Archive archive;
-            switch(opts.getSelected())
+            FS_Archive arch;
+            switch(hblMenu.getSelected())
             {
-                case _saveOpts:
-                    if(openSaveArch3dsx(&archive))
-                        startSaveMenu(archive, data);
+                case hblOpts::expSav:
+                    if(openSaveArch3dsx(&arch))
+                    {
+                        createTitleDir(data, MODE_SAVE);
+                        backupData(data, arch, MODE_SAVE, false);
+                    }
                     break;
-                case _extDataOpts:
-                    if(openExtdata(&archive, data, true))
-                        startExtMenu(archive, data);
+                case hblOpts::impSav:
+                    if(openSaveArch3dsx(&arch))
+                        restoreData(data, arch, MODE_SAVE);
                     break;
-                case _exit:
+                case hblOpts::delSV:
+                    fsEnd();
+                    if(deleteSV(data))
+                        showMessage("Secure value successfully deleted!");
+                    fsStart();
+                    break;
+                case hblOpts::expExt:
+                    if(openExtdata(&arch, data, true))
+                    {
+                        createTitleDir(data, MODE_EXTDATA);
+                        backupData(data, arch, MODE_EXTDATA, false);
+                    }
+                    break;
+                case hblOpts::impExt:
+                    if(openExtdata(&arch, data, false))
+                        restoreData(data, arch, MODE_EXTDATA);
+                    break;
+                case hblOpts::exit:
                     kill = true;
                     break;
             }
+            FSUSER_CloseArchive(arch);
         }
-        else if(up & KEY_START)
-            kill = true;
+
+        killApp(down);
 
         sf2d_start_frame(GFX_TOP, GFX_LEFT);
             drawTopBar(info);
-            opts.draw();
+            hblMenu.draw();
         sf2d_end_frame();
 
         sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
@@ -109,8 +123,4 @@ void start3dsxMode()
     }
 
     fsEnd();
-
-    //This fails if used while the FS session is open.
-    deleteSV(data);
-
 }

@@ -13,17 +13,12 @@
 
 std::u32string tou32(const std::u16string t)
 {
-    char32_t *tmp = new char32_t[256];
-    memset(tmp, 0, sizeof(char32_t) * 256);
+    char32_t tmp[256];
+    memset(tmp, 0, 256);
 
     utf16_to_utf32((uint32_t *)tmp, (uint16_t *)t.data(), 256);
 
-    std::u32string ret;
-    ret.assign(tmp);
-
-    delete[] tmp;
-
-    return ret;
+    return std::u32string(tmp);
 }
 
 std::u32string modeText(int mode)
@@ -32,19 +27,19 @@ std::u32string modeText(int mode)
     switch(mode)
     {
         case MODE_SAVE:
-            ret = tou32(tou16(" : Save"));
+            ret = U" : Save";
             break;
         case MODE_EXTDATA:
-            ret = tou32(tou16(" : ExtData"));
+            ret = U" : ExtData";
             break;
         case MODE_BOSS:
-            ret = tou32(tou16(" : Boss ExtData"));
+            ret = U" : Boss ExtData";
             break;
         case MODE_SYSSAVE:
-            ret = tou32(tou16(" : System Save"));
+            ret = U" : System Save";
             break;
         case MODE_SHARED:
-            ret = tou32(tou16(" : Shared ExtData"));
+            ret = U" : Shared ExtData";
             break;
     }
     return ret;
@@ -52,17 +47,12 @@ std::u32string modeText(int mode)
 
 std::u16string tou16(const char *t)
 {
-    char16_t *tmp = new char16_t[256];
+    char16_t tmp[256];
     memset(tmp, 0, sizeof(char16_t) * 256);
 
     utf8_to_utf16((uint16_t *)tmp, (uint8_t *)t, 256);
 
-    std::u16string ret;
-    ret.assign(tmp);
-
-    delete[] tmp;
-
-    return ret;
+    return std::u16string(tmp);
 }
 
 std::string toString(const std::u16string t)
@@ -75,6 +65,19 @@ std::string toString(const std::u16string t)
     return ret;
 }
 
+void writeErrorToBuff(u8 *buff, size_t bSize, unsigned error)
+{
+    char bytes[16];
+    sprintf(bytes, "****%08X****", error);
+
+    for(unsigned i = 0, cByte = 0; i < bSize; i++, cByte++)
+    {
+        if(cByte > 15)
+            cByte = 0;
+        buff[i] = bytes[cByte];
+    }
+}
+
 void createTitleDir(const titleData t, int mode)
 {
     std::u16string create = getPath(mode) + t.nameSafe;
@@ -82,7 +85,7 @@ void createTitleDir(const titleData t, int mode)
     FSUSER_CreateDirectory(sdArch, fsMakePath(PATH_UTF16, create.data()), 0);
 }
 
-void deleteSV(const titleData t)
+bool deleteSV(const titleData t)
 {
     u64 in = ((u64)SECUREVALUE_SLOT_SD << 32) | (t.unique << 8);
     u8 out;
@@ -91,7 +94,10 @@ void deleteSV(const titleData t)
     if(res)
     {
         showMessage("Failed to delete secure value!");
+        return false;
     }
+
+    return true;
 }
 
 std::u16string getPath(int mode)
@@ -139,7 +145,9 @@ void deleteExtdata(const titleData dat)
     Result res = FSUSER_DeleteExtSaveData(del);
     if(res)
     {
-        showMessage("Error deleting ExtData!");
+        char tmp[256];
+        sprintf(tmp, "Error deleting ExtData! 0x%08X.", (unsigned)res);
+        showMessage(tmp);
     }
 }
 
@@ -205,4 +213,30 @@ bool fexists(const char *path)
     fclose(test);
 
     return true;
+}
+
+void fsStart()
+{
+   Handle fs;
+   srvGetServiceHandleDirect(&fs, "fs:USER");
+   FSUSER_Initialize(fs);
+   fsUseSession(fs);
+}
+
+void fsEnd()
+{
+    fsEndUseSession();
+}
+
+extern void prepMain(), prepBackMenu(), prepSaveMenu(), prepExtMenu(), prepNandBackup(), prepSharedMenu(), prepSharedBackMenu();
+
+void prepareMenus()
+{
+    prepMain();
+    prepBackMenu();
+    prepSaveMenu();
+    prepExtMenu();
+    prepNandBackup();
+    prepSharedMenu();
+    prepSharedBackMenu();
 }

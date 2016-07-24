@@ -4,6 +4,6 @@
 #include <3ds.h>
 #include "titledata.h"
 
-void startSaveMenu(FS_Archive saveArch, const titleData dat);
+void showSaveMenu();
 
 #endif // SAVEMENU_H

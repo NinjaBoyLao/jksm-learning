@@ -6,14 +6,81 @@
 
 #include "hbfilter.h"
 #include "util.h"
+#include "ui.h"
 
 std::vector<u32> filterID;
 
+bool downloadFilter()
+{
+    u32 wifi;
+    ACU_GetWifiStatus(&wifi);
+    if(wifi==0)
+        return false;
+
+    httpcContext filter;
+
+    Result res = httpcOpenContext(&filter, HTTPC_METHOD_GET, "https://raw.githubusercontent.com/J-D-K/JKSM/master/filter.txt", 1);
+    if(res)
+    {
+        showMessage("Open context.");
+        return false;
+    }
+
+    res = httpcSetSSLOpt(&filter, SSLCOPT_DisableVerify);
+    if(res)
+    {
+        showMessage("Set SSL Opt.");
+    }
+
+    res = httpcBeginRequest(&filter);
+    if(res)
+    {
+        showMessage("Begin request.");
+        return false;
+    }
+
+    u32 code;
+    res = httpcGetResponseStatusCode(&filter, &code, 0);
+    if(res || code!=200)
+    {
+        showMessage("Not found?");
+        return false;
+    }
+
+    u32 fSize;
+    res = httpcGetDownloadSizeState(&filter, NULL, &fSize);
+    if(res)
+    {
+        showMessage("Download size.");
+        return false;
+    }
+
+    u8 *buff = new u8[fSize];
+    res = httpcDownloadData(&filter, buff, fSize, NULL);
+    if(res)
+    {
+        showMessage("Download data.");
+        delete[] buff;
+        return false;
+    }
+
+    FILE *filterTxt = fopen("filter.txt", "wb");
+    fwrite(buff, 1, fSize, filterTxt);
+    fclose(filterTxt);
+
+    delete[] buff;
+
+    showMessage("Filter downloaded.");
+
+    return true;
+}
+
 void loadFilterList()
 {
-    if(fexists("/JKSV/filter.txt"))
+    filterID.clear();
+    if(fexists("filter.txt"))
     {
-        FILE *load = fopen("/JKSV/filter.txt", "r");
+        FILE *load = fopen("filter.txt", "r");
 
         char id[16];
 
@@ -24,6 +91,11 @@ void loadFilterList()
         }
 
         fclose(load);
+    }
+    else
+    {
+        if(downloadFilter())
+            loadFilterList();
     }
 }
 
