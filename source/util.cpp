@@ -21,29 +21,6 @@ std::u32string tou32(const std::u16string t)
     return std::u32string(tmp);
 }
 
-std::u32string modeText(int mode)
-{
-    std::u32string ret;
-    switch(mode)
-    {
-        case MODE_SAVE:
-            ret = U" : Save";
-            break;
-        case MODE_EXTDATA:
-            ret = U" : ExtData";
-            break;
-        case MODE_BOSS:
-            ret = U" : Boss ExtData";
-            break;
-        case MODE_SYSSAVE:
-            ret = U" : System Save";
-            break;
-        case MODE_SHARED:
-            ret = U" : Shared ExtData";
-            break;
-    }
-    return ret;
-}
 
 std::u16string tou16(const char *t)
 {
@@ -63,6 +40,30 @@ std::string toString(const std::u16string t)
         ret += t[i];
 
     return ret;
+}
+
+std::u32string modeText(int mode)
+{
+    switch(mode)
+    {
+        case MODE_SAVE:
+            return U" : Save";
+            break;
+        case MODE_EXTDATA:
+            return U" : ExtData";
+            break;
+        case MODE_BOSS:
+            return U" : Boss ExtData";
+            break;
+        case MODE_SYSSAVE:
+            return U" : System Save";
+            break;
+        case MODE_SHARED:
+            return U" : Shared ExtData";
+            break;
+    }
+
+    return U"";
 }
 
 void writeErrorToBuff(u8 *buff, size_t bSize, unsigned error)
@@ -85,6 +86,59 @@ void createTitleDir(const titleData t, int mode)
     FSUSER_CreateDirectory(sdArch, fsMakePath(PATH_UTF16, create.data()), 0);
 }
 
+void renameU16(std::u16string oldName, std::u16string newName)
+{
+    FSUSER_RenameDirectory(sdArch, fsMakePath(PATH_UTF16, oldName.data()), sdArch, fsMakePath(PATH_UTF16, newName.data()));
+}
+
+void renameDir(const titleData t)
+{
+    std::u16string oldName, oldPath, newPath;
+    if(hbl)
+    {
+        //get old one with '_'s
+        oldName = safeStringOld(t.name);
+
+        //Rename save dirs
+        oldPath = getPath(MODE_SAVE) + oldName;
+        newPath = getPath(MODE_SAVE) + t.nameSafe;
+        renameU16(oldPath, newPath);
+
+        //rename extdat
+        oldPath = getPath(MODE_EXTDATA) + oldName;
+        newPath = getPath(MODE_EXTDATA) + t.nameSafe;
+        renameU16(oldPath, newPath);
+    }
+    else if(t.media == MEDIATYPE_SD)
+    {
+        oldName = safeStringOld(t.name);
+
+        oldPath = getPath(MODE_SAVE) + oldName;
+        newPath = getPath(MODE_SAVE) + t.nameSafe;
+        renameU16(oldPath, newPath);
+
+        oldPath = getPath(MODE_EXTDATA) + oldName;
+        newPath = getPath(MODE_EXTDATA) + t.nameSafe;
+        renameU16(oldPath, newPath);
+    }
+    else if(t.media == MEDIATYPE_NAND)
+    {
+        oldName = safeStringOld(t.name);
+
+        oldPath = getPath(MODE_SYSSAVE) + oldName;
+        newPath = getPath(MODE_SYSSAVE) + t.nameSafe;
+        renameU16(oldPath, newPath);
+
+        oldPath = getPath(MODE_EXTDATA) + oldName;
+        newPath = getPath(MODE_EXTDATA) + t.nameSafe;
+        renameU16(oldPath, newPath);
+
+        oldPath = getPath(MODE_BOSS) + oldName;
+        newPath = getPath(MODE_BOSS) + t.nameSafe;
+        renameU16(oldPath, newPath);
+    }
+}
+
 bool deleteSV(const titleData t)
 {
     u64 in = ((u64)SECUREVALUE_SLOT_SD << 32) | (t.unique << 8);
@@ -102,26 +156,28 @@ bool deleteSV(const titleData t)
 
 std::u16string getPath(int mode)
 {
-    std::u16string ret;
     switch(mode)
     {
         case MODE_SAVE:
-            ret = tou16("/JKSV/Saves/");
+            return tou16("/JKSV/Saves/");
             break;
         case MODE_EXTDATA:
-            ret = tou16("/JKSV/ExtData/");
+            return tou16("/JKSV/ExtData/");
             break;
         case MODE_BOSS:
-            ret = tou16("/JKSV/Boss/");
+            return tou16("/JKSV/Boss/");
             break;
         case MODE_SYSSAVE:
-            ret = tou16("/JKSV/SysSave/");
+            return tou16("/JKSV/SysSave/");
             break;
         case MODE_SHARED:
-            ret = tou16("/JKSV/Shared/");
+            return tou16("/JKSV/Shared/");
+            break;
+        default:
+            return tou16("/JKSV/");
             break;
     }
-    return ret;
+    return (char16_t *)"";
 }
 
 bool runningUnder()
@@ -190,12 +246,6 @@ bool touchPressed(touchPosition p)
     return false;
 }
 
-void sleep(int s)
-{
-    s64 time = s * 1000000000;
-    svcSleepThread(time);
-}
-
 bool modeExtdata(int mode)
 {
     if(mode==MODE_EXTDATA || mode==MODE_BOSS || mode==MODE_SHARED)
@@ -226,6 +276,58 @@ void fsStart()
 void fsEnd()
 {
     fsEndUseSession();
+}
+
+//I seriously can't remember why I put space in there. I don't like it anymore.
+const char16_t oldVerboten[] = { L' ', L'.', L',', L'/', L'\\', L'<', L'>', L':', L'"', L'|', L'?', L'*'};//12
+const char16_t newVerboten[] = { L'.', L',', L'/', L'\\', L'<', L'>', L':', L'"', L'|', L'?', L'*'};
+
+bool isVerbotenOld(char16_t d)
+{
+    for(int i = 0; i < 12; i++)
+    {
+        if(d == oldVerboten[i])
+            return true;
+    }
+
+    return false;
+}
+
+bool isVerboten(char16_t d)
+{
+    for(int i = 0; i < 11; i++)
+    {
+        if(d == newVerboten[i])
+            return true;
+    }
+
+    return false;
+}
+
+std::u16string safeStringOld(const std::u16string s)
+{
+    std::u16string ret;
+    for(unsigned i = 0; i < s.length(); i++)
+    {
+        if(isVerbotenOld(s[i]))
+            ret += L'_';
+        else
+            ret += s[i];
+    }
+    return ret;
+}
+
+std::u16string safeString(const std::u16string s)
+{
+    std::u16string ret;
+    for(unsigned i = 0; i < s.length(); i++)
+    {
+        if(isVerboten(s[i]))
+            ret += ' ';
+        else
+            ret += s[i];
+    }
+    return ret;
 }
 
 extern void prepMain(), prepBackMenu(), prepSaveMenu(), prepExtMenu(), prepNandBackup(), prepSharedMenu(), prepSharedBackMenu();

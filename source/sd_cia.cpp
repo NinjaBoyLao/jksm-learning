@@ -34,6 +34,7 @@ void sdStartSelect()
     if(sdTitle.size() < 1)
     {
         showMessage("No installed titles were found!");
+        state = states::STATE_MAINMENU;
         return;
     }
 

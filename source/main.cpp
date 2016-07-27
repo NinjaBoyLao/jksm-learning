@@ -8,36 +8,16 @@
 
 #include "sys.h"
 #include "global.h"
-#include "menu.h"
-#include "titles.h"
-#include "sd_cia.h"
-#include "nand.h"
-#include "cart.h"
-#include "extra.h"
-#include "shared.h"
-#include "hbfilter.h"
 #include "util.h"
 #include "3dsx.h"
-#include "ui.h"
-
-enum
-{
-    _cart,
-    _cia,
-    _sys,
-    _shared,
-    _refresh,
-    _extra,
-    _exit,
-    _test
-
-};
+#include "titles.h"
 
 int main(int argc, const char * argv[])
 {
     sysInit();
 
     hidScanInput();
+
     u32 held = hidKeysHeld();
     if((held & KEY_R) && (held & KEY_L))
         devMode = true;
@@ -50,7 +30,11 @@ int main(int argc, const char * argv[])
     else
     {
         sdTitlesInit();
+        for(unsigned i = 0; i < sdTitle.size(); i++)
+            renameDir(sdTitle[i]);
         nandTitlesInit();
+        for(unsigned i = 0; i < nandTitle.size(); i++)
+            renameDir(nandTitle[i]);
 
         while(aptMainLoop() && !kill)
         {

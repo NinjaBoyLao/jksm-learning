@@ -21,6 +21,7 @@ std::string GetString(const char *hint)
     SwkbdDictWord dates[2];
     swkbdSetDictWord(&dates[0], "2016", GetDate(FORMAT_YDM));
     swkbdSetDictWord(&dates[1], "2016", GetDate(FORMAT_YMD));
+    swkbdSetInitialText(&keyState, GetDate(FORMAT_YMD));
     swkbdSetDictionary(&keyState, dates, 2);
 
     swkbdInputText(&keyState, input, 64);

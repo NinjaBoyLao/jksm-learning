@@ -71,7 +71,8 @@ void showSaveMenu()
                     restoreDataSDPath(*curTitle, saveArch, MODE_SAVE);
                 break;
             case saveOpts::delSV:
-                deleteSV(*curTitle);
+                if(deleteSV(*curTitle))
+                    showMessage("Secure value successfully deleted!");
                 break;
             case saveOpts::delSav:
                 if(openSaveArch(&saveArch, *curTitle, true) && confirm("Are you sure you want to delete this title's current save data?"))

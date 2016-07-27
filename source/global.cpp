@@ -20,11 +20,7 @@
 #include "extra.h"
 #include "shared.h"
 
-int state = states::STATE_MAINMENU, prevState = states::STATE_MAINMENU;
-titleData *curTitle = NULL;
-
 unsigned buff_size = 0x10000;
-unsigned frameCount = 0;
 
 sftd_font * font;
 
@@ -32,18 +28,12 @@ sf2d_texture * bar;
 
 FS_Archive sdArch;
 
-bool useTouch, _date, hbl = false;
-
-bool devMode = false;
-
-bool kill = false;
+bool hbl = false, devMode = false, kill = false;
 
 //default colors
 u8 clearColor[3] = {0, 0, 0};
 u8 selColor[3] = {0, 255, 0};
 u8 unSelColor[3] = {128, 128, 128};
-
-std::u32string nameEnterString = U"Enter a folder name. Press A when finished.";
 
 //draws the bar shown up top
 void drawTopBar(const std::u32string nfo)
@@ -57,6 +47,11 @@ void drawTopBar(const std::u32string nfo)
     //time
     sftd_draw_text(font, 360, 0, RGBA8(0, 0, 0, 255), 12, RetTime().c_str());
 }
+
+//I needed a quick way to get most of it under one loop without having to completely rewrite it
+//This is what I came up with.
+int state = states::STATE_MAINMENU, prevState = states::STATE_MAINMENU;
+titleData *curTitle = NULL;
 
 void handleState()
 {
@@ -159,7 +154,6 @@ void mainMenu()
             case mMenuOpts::ref:
                 remove("titles");
                 sdTitlesInit();
-                refreshed = true;
                 break;
             case mMenuOpts::filter:
                 remove("filter.txt");
@@ -177,7 +171,7 @@ void mainMenu()
     killApp(down);
 
     sf2d_start_frame(GFX_TOP, GFX_LEFT);
-        drawTopBar(U"JKSM - 7/23/2016");
+        drawTopBar(U"JKSM - 7/26/2016");
         mMenu.draw();
     sf2d_end_frame();
 

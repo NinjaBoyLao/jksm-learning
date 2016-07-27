@@ -20,9 +20,6 @@ class titleData
         std::u32string u32Name;
         FS_MediaType media;
         bool initd = false;
-
-    private:
-        smdh_s *smdh;
 };
 
 #endif // TITLEDATA_H

@@ -11,18 +11,6 @@
 #include "global.h"
 #include "backupmenu.h"
 
-//We can try two different ways with carts
-bool openCart(FS_Archive *out, const titleData dat)
-{
-    //if first way works
-    if(openCartArch(out))
-        return true;
-    else if(openSaveArch(out, dat, true))
-        return true;
-
-    return false;
-}
-
 bool cartCheck()
 {
     //Check if there is a cart

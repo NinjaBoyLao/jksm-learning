@@ -50,24 +50,15 @@ extern FS_Archive sdArch;
 //This draws the bar you see at the top
 void drawTopBar(const std::u32string nfo);
 
-//Settings
-extern bool useTouch, _date, hbl;
+extern bool devMode, hbl, kill;
 
-//Turns off filters and other stuff
-extern bool devMode;
-
-//handles killing the app
-//this breaks every loop and allows
-//sysExit() to run at the end.
-extern bool kill;
+//Allows app to be killed by hitting start
 void killApp(u32 up);
 
 //got tired of black, gray, and green all the time
 extern u8 clearColor[3];
 extern u8 selColor[3];
 extern u8 unSelColor[3];
-
-extern std::u32string nameEnterString;
 
 void mainMenu();
 

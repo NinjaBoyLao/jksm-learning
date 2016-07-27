@@ -16,8 +16,7 @@
 std::vector<titleData> sdTitle;
 std::vector<titleData> nandTitle;
 
-bool refreshed = false;
-
+//Not real alphabetical sorting, but close enough.
 struct
 {
     bool operator()(const titleData a, const titleData b)
@@ -35,6 +34,7 @@ struct
 bool checkHigh(u64 id)
 {
     u32 high = id >> 32;
+    //Games + Demos
     if(high == 0x00040000 || high == 0x00040002)
         return true;
 
@@ -55,9 +55,14 @@ void sdTitlesInit()
         if(dbGetRev(read)==1)
         {
             u32 count = dbGetCount(read);
+            sdTitle.reserve(count);
 
             for(unsigned i = 0; i < count; i++)
-                sdTitle.push_back(dbGetData(read));
+            {
+                titleData newData = dbGetData(read);
+                newData.media = MEDIATYPE_SD;
+                sdTitle.push_back(newData);
+            }
 
             fclose(read);
         }
@@ -66,7 +71,6 @@ void sdTitlesInit()
             fclose(read);
             remove("titles");
             sdTitlesInit();
-            return;
         }
     }
     else
@@ -74,6 +78,7 @@ void sdTitlesInit()
         //get title count for sdmc
         u32 count;
         AM_GetTitleCount(MEDIATYPE_SD, &count);
+        sdTitle.reserve(count);
 
         //get ids
         u64 *ids = new u64[count];
@@ -82,8 +87,6 @@ void sdTitlesInit()
         progressBar load((float)count, "Loading titles...");
         for(unsigned i = 0; i < count; i++)
         {
-            //0x00040000 = games
-            //0x00040002 = demos
             if( (checkHigh(ids[i]) && !hbFilter(ids[i])) || devMode)
             {
                 titleData newTitle;
@@ -142,10 +145,12 @@ void nandTitlesInit()
         if(dbGetRev(read)==1)
         {
             u32 count = dbGetCount(read);
+            nandTitle.reserve(count);
 
             for(unsigned i = 0; i < count; i++)
             {
                 titleData newNand = dbGetData(read);
+                newNand.media = MEDIATYPE_NAND;
                 sysSaveRedirect(&newNand);
                 nandTitle.push_back(newNand);
             }
@@ -156,7 +161,6 @@ void nandTitlesInit()
             fclose(read);
             remove("nand");
             nandTitlesInit();
-            return;
         }
     }
     else

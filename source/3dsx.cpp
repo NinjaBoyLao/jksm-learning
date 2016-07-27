@@ -47,7 +47,7 @@ void start3dsxMode()
 
     menu hblMenu(0, 80, false, true);
     hblMenu.addItem("Export Save");
-    hblMenu.addItem("Import Save");\
+    hblMenu.addItem("Import Save");
     hblMenu.addItem("Delete Secure Value");
     hblMenu.addItem("Export ExtData");
     hblMenu.addItem("Import ExtData");

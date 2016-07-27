@@ -16,8 +16,6 @@
 #include "titles.h"
 #include "hbfilter.h"
 
-extern std::vector<u32> filterID;
-
 void loadImgs()
 {
     bar = sf2d_create_texture_mem_RGBA8(TopBar.pixel_data, TopBar.width, TopBar.height, TEXFMT_RGBA8, SF2D_PLACE_RAM);
@@ -36,12 +34,9 @@ void loadCol()
 {
     FILE *colBin = fopen("colBin", "rb");
 
-    for(int i = 0; i < 3; i++)
-        clearColor[i] = fgetc(colBin);
-    for(int i = 0; i < 3; i++)
-        selColor[i] = fgetc(colBin);
-    for(int i = 0; i < 3; i++)
-        unSelColor[i] = fgetc(colBin);
+    fread(clearColor, 1, 3, colBin);
+    fread(selColor, 1, 3, colBin);
+    fread(unSelColor, 1, 3, colBin);
 
     fclose(colBin);
 }
@@ -50,9 +45,7 @@ void changeBuffSize()
 {
     FILE *bSize = fopen("buff_size", "rb");
 
-    buff_size = 0;
-    for(int i = 0; i < 4; i++)
-        buff_size += (fgetc(bSize) << (8 * i));
+    fread(&buff_size, sizeof(u32), 1, bSize);
 
     fclose(bSize);
 }
@@ -66,7 +59,6 @@ void createDir(const char *path)
 void sysInit()
 {
     mkdir("/JKSV", 0777);
-
     chdir("/JKSV");
 
     if(fexists("colBin"))
@@ -132,10 +124,6 @@ void sysExit()
     httpcExit();
 
     freeImgs();
-
-    sdTitle.clear();
-    nandTitle.clear();
-    filterID.clear();
 
     sftd_free_font(font);
     sftd_fini();

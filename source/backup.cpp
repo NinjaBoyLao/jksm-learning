@@ -129,9 +129,9 @@ bool backupData(const titleData dat, FS_Archive arch, int mode, bool autoName)
     if(autoName)
         slot = tou16(GetDate(FORMAT_YMD));
     else
-        slot = tou16(GetSlot(true, dat, mode).c_str());
+        slot = safeString(tou16(GetSlot(true, dat, mode).c_str()));
 
-    if(slot.data()[0]==0)
+    if(slot.empty())
         return false;
 
     //get path returns path to /JKSV/[DIR]

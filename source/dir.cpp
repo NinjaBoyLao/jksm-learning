@@ -69,7 +69,5 @@ bool dirList::isDir(int i)
 //returns entry's name as u16string
 std::u16string dirList::retItem(int i)
 {
-    std::u16string ret;
-    ret.assign((char16_t *)entry[i].name);
-    return ret;
+    return (char16_t *)entry[i].name;
 }

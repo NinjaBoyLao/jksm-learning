@@ -10,17 +10,10 @@
 bool openSaveArch(FS_Archive *out, const titleData dat, bool showError)
 {
     //binary path
-    u32 path[3];
-    //first is mediaType
-    path[0] = dat.media;
-    //low id
-    path[1] = dat.low;
-    //high id. this is usually 0x00040000
-    path[2] = dat.high;
+    u32 path[3] = {dat.media, dat.low, dat.high};
 
     FS_Path binPath = {PATH_BINARY, 12, path};
 
-    //setup archive info
     Result res = FSUSER_OpenArchive(out, ARCHIVE_USER_SAVEDATA, binPath);
     if(res)
     {
@@ -32,23 +25,9 @@ bool openSaveArch(FS_Archive *out, const titleData dat, bool showError)
     return true;
 }
 
-bool openCartArch(FS_Archive *out)
-{
-    Result res = FSUSER_OpenArchive(out, ARCHIVE_GAMECARD_SAVEDATA, fsMakePath(PATH_EMPTY, ""));
-    if(res)
-    {
-        return false;
-    }
-
-    return true;
-}
-
 bool openExtdata(FS_Archive *out, const titleData dat, bool showError)
 {
-    u32 path[3];
-    path[0] = MEDIATYPE_SD;//always sd for extdata
-    path[1] = dat.extdata;
-    path[2] = 0;
+    u32 path[] = {MEDIATYPE_SD, dat.extdata, 0};
 
     FS_Path binPath = {PATH_BINARY, 12, path};
 
@@ -65,10 +44,7 @@ bool openExtdata(FS_Archive *out, const titleData dat, bool showError)
 
 bool openSharedExt(FS_Archive *out, u32 id)
 {
-    u32 path[3];
-    path[0] = MEDIATYPE_NAND;
-    path[1] = id;
-    path[2] = 0x00048000;
+    u32 path[3] = {MEDIATYPE_NAND, id, 0x00048000};
 
     FS_Path binPath = {PATH_BINARY, 12, path};
 
@@ -84,10 +60,7 @@ bool openSharedExt(FS_Archive *out, u32 id)
 
 bool openBossExt(FS_Archive *out, const titleData dat)
 {
-    u32 path[3];
-    path[0] = MEDIATYPE_SD;
-    path[1] = dat.extdata;
-    path[2] = 0;
+    u32 path[3] = {MEDIATYPE_SD, dat.extdata, 0};
 
     FS_Path binPath = {PATH_BINARY, 12, path};
 
@@ -103,9 +76,7 @@ bool openBossExt(FS_Archive *out, const titleData dat)
 
 bool openSysModule(FS_Archive *out, const titleData dat)
 {
-    u32 path[2];
-    path[0] = MEDIATYPE_NAND;
-    path[1] = (0x00010000 | dat.unique);
+    u32 path[2] = {MEDIATYPE_NAND, (0x00010000 | dat.unique)};
 
     FS_Path binPath = {PATH_BINARY, 8, path};
 
@@ -120,9 +91,7 @@ bool openSysModule(FS_Archive *out, const titleData dat)
 
 bool openSysSave(FS_Archive *out, const titleData dat)
 {
-    u32 path[2];
-    path[0] = MEDIATYPE_NAND;
-    path[1] = (0x00020000 | dat.unique);
+    u32 path[2] = {MEDIATYPE_NAND, (0x00020000 | dat.unique)};
 
     FS_Path binPath = {PATH_BINARY, 8, path};
 
