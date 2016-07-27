@@ -17,12 +17,14 @@
 
 titleData * sysTitle = NULL;
 
-static menu nandMenu(88, 20, false, true);
+static menu nandMenu(40, 20, false, false);
 
 void prepNandSelect()
 {
     for(unsigned i = 0; i < nandTitle.size(); i++)
         nandMenu.addItem(nandTitle[i].name);
+    if(centered)
+        nandMenu.centerOpts();
 
     nandMenu.autoVert();
 }

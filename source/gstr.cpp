@@ -12,6 +12,14 @@
 
 std::string GetString(const char *hint)
 {
+    hidScanInput();
+
+    u32 held = hidKeysHeld();
+    if(held & KEY_L)
+        return GetDate(FORMAT_YDM);
+    else if(held & KEY_R)
+        return  GetDate(FORMAT_YMD);
+
     SwkbdState keyState;
     char input[64];
 

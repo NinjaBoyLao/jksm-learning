@@ -189,6 +189,12 @@ void menu::reset()
     opts.clear();
 }
 
+void menu::centerOpts()
+{
+    for(unsigned i = 0; i < opts.size(); i++)
+        opts[i].autoCenter();
+}
+
 void menu::autoVert()
 {
 

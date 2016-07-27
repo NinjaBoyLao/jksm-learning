@@ -18,13 +18,15 @@ const std::string helpText = "Press L to select multiple. Press R to select all.
 //Help button
 static button help("Help", 224, 208, 96, 32);
 
-static menu titleMenu(88, 20, true, true);
+static menu titleMenu(40, 20, true, false);
 
 void prepSDSelect()
 {
     titleMenu.reset();
     for(unsigned i = 0; i < sdTitle.size(); i++)
         titleMenu.addItem(sdTitle[i].name);
+    if(centered)
+        titleMenu.centerOpts();
 
     titleMenu.autoVert();
 }

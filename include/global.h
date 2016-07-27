@@ -50,7 +50,7 @@ extern FS_Archive sdArch;
 //This draws the bar you see at the top
 void drawTopBar(const std::u32string nfo);
 
-extern bool devMode, hbl, kill;
+extern bool devMode, hbl, kill, centered;
 
 //Allows app to be killed by hitting start
 void killApp(u32 up);

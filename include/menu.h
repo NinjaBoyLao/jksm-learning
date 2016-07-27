@@ -29,6 +29,8 @@ class menu
         int getSelected();
         void setSelected(int sel);
         void reset();
+
+        void centerOpts();
         void autoVert();
 
         unsigned getSize();

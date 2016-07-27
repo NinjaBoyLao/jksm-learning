@@ -41,7 +41,7 @@ std::string GetSlot(bool nSlot, const titleData dat, int Mode)
         return "";
     }
 
-    menu getSlot(88, 20, false, true);
+    menu getSlot(40, 20, false, false);
     //Go through dirs found and add them to menu
     for(unsigned i = 0; i < list.count(); i++)
     {
@@ -50,6 +50,9 @@ std::string GetSlot(bool nSlot, const titleData dat, int Mode)
     //If we're allowing new slots
     if(nSlot)
         getSlot.addItem("New");
+
+    if(centered)
+        getSlot.centerOpts();
 
     button help("Help", 224, 208, 96, 32);
 
@@ -101,6 +104,9 @@ std::string GetSlot(bool nSlot, const titleData dat, int Mode)
                         getSlot.addItem(list.retItem(i));
                     if(nSlot)
                         getSlot.addItem("New");
+
+                    if(centered)
+                        getSlot.centerOpts();
                 }
             }
         }
@@ -126,6 +132,9 @@ std::string GetSlot(bool nSlot, const titleData dat, int Mode)
 
                 if(nSlot)
                     getSlot.addItem("New");
+
+                if(centered)
+                    getSlot.centerOpts();
             }
         }
         else if(help.released(pos))

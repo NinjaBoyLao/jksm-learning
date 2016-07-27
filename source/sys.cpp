@@ -65,6 +65,8 @@ void sysInit()
         loadCol();
     if(fexists("buff_size"))
         changeBuffSize();
+    if(fexists("no_center"))
+        centered = false;
 
     //Start sf2d
     sf2d_init();

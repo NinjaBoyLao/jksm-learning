@@ -45,6 +45,8 @@ void start3dsxMode()
     if(!data.init(id, MEDIATYPE_GAME_CARD))
         data.init(id, MEDIATYPE_SD);
 
+    renameDir(data);
+
     menu hblMenu(0, 80, false, true);
     hblMenu.addItem("Export Save");
     hblMenu.addItem("Import Save");

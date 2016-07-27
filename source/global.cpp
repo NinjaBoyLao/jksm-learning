@@ -28,7 +28,7 @@ sf2d_texture * bar;
 
 FS_Archive sdArch;
 
-bool hbl = false, devMode = false, kill = false;
+bool hbl = false, devMode = false, kill = false, centered = true;
 
 //default colors
 u8 clearColor[3] = {0, 0, 0};
@@ -167,6 +167,8 @@ void mainMenu()
                 break;
         }
     }
+    else if(down & KEY_B)
+        kill = true;
 
     killApp(down);
 
