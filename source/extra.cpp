@@ -23,7 +23,7 @@ void setPlayCoins()
     FS_Archive shared;
     if(openSharedExt(&shared, 0xf000000b))
     {
-        fsFile gameCoin(shared, "/gamecoin.dat", FS_OPEN_WRITE | FS_OPEN_WRITE);
+        fsFile gameCoin(shared, "/gamecoin.dat", FS_OPEN_READ | FS_OPEN_WRITE);
 
         int coinAmount = 0;
         gameCoin.seek(0x4, seek_beg);
