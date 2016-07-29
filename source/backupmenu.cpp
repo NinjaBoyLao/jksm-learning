@@ -32,7 +32,8 @@ void backupMenu()
 {
     if(curTitle==NULL)
     {
-        showMessage("OH SHIT! THIS SHOULDN'T HAPPEN!");
+        showMessage("OH SHIT! THIS SHOULDN'T HAPPEN!", "curTitle is NULL!!!");
+        state = prevState;
         return;
     }
 

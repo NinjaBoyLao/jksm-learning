@@ -2,6 +2,7 @@
 #include <sf2d.h>
 #include <sftd.h>
 #include <string>
+#include <stdio.h>
 
 #include "ui.h"
 #include "textbox.h"
@@ -15,7 +16,7 @@ bool confirm(const char *t)
 
     button yes("Yes (A)", 40, 176, 96, 32);
     button no("No (B)", 180, 176, 96, 32);
-    textbox back(24, 24, 280, 200, t);
+    textbox back(24, 24, 280, 200, t, "Confirm");
     while(true)
     {
         hidScanInput();
@@ -36,10 +37,8 @@ bool confirm(const char *t)
             break;
         }
 
-        killApp(down);
-
         sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
-            back.draw(false);
+            back.draw();
             yes.draw();
             no.draw();
         sf2d_end_frame();
@@ -50,10 +49,10 @@ bool confirm(const char *t)
     return ret;
 }
 
-void showMessage(const char *t)
+void showMessage(const char *t, const char *head)
 {
     button ok("OK (A)", 116, 176, 96, 32);
-    textbox back(24, 24, 280, 200, t);
+    textbox back(24, 24, 280, 200, t, head);
 
     while(true)
     {
@@ -64,13 +63,11 @@ void showMessage(const char *t)
 
         u32 down = hidKeysDown();
 
-        if(ok.released(p) || (down & KEY_A) || (down & KEY_B))
+        if(ok.released(p) || down & KEY_A)
             break;
 
-        killApp(down);
-
         sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
-            back.draw(false);
+            back.draw();
             ok.draw();
         sf2d_end_frame();
 
@@ -78,23 +75,49 @@ void showMessage(const char *t)
     }
 }
 
-sf2d_texture *progEmpty, *progFull;
+void showError(const char *t, unsigned error)
+{
+    char full[256];
+    sprintf(full, "%s : %08X", t, error);
+    button ok("OK (A)", 116, 176, 96, 32);
+    textbox back(24, 24, 280, 200, full, "Error:");
+
+    while(true)
+    {
+        hidScanInput();
+
+        touchPosition p;
+        hidTouchRead(&p);
+
+        u32 down = hidKeysDown();
+
+        if(ok.released(p) || down & KEY_A)
+            break;
+
+        sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
+            back.draw();
+            ok.draw();
+        sf2d_end_frame();
+
+        sf2d_swapbuffers();
+    }
+}
+
+static sf2d_texture *progFull;
 
 void progressBarInit()
 {
-    progEmpty = sf2d_create_texture_mem_RGBA8(pbar_empty.pixel_data, pbar_empty.width, pbar_empty.height, TEXFMT_RGBA8, SF2D_PLACE_RAM);
     progFull = sf2d_create_texture_mem_RGBA8(pbar_full.pixel_data, pbar_full.width, pbar_full.height, TEXFMT_RGBA8, SF2D_PLACE_RAM);
 }
 
 void progressBarExit()
 {
-    sf2d_free_texture(progEmpty);
     sf2d_free_texture(progFull);
 }
 
-progressBar::progressBar(float _max, const char *t)
+progressBar::progressBar(float _max, const char *t, const char *head)
 {
-    back = new textbox(24, 24, 280, 200, t);
+    back = new textbox(24, 24, 280, 200, t, head);
     max = _max;
 }
 
@@ -108,7 +131,7 @@ void progressBar::draw(float cur)
     float prog = (float)(cur / max) * 100;
     float xScale = (float)(prog * 128) / 100;
 
-    back->draw(false);
-    sf2d_draw_texture_scale(progEmpty, back->X + 8, back->Y + 160, 128, 1);
+    back->draw();
+    sf2d_draw_rectangle(back->X + 8, back->Y + 160, 256, 16, RGBA8(0, 0, 0, 255));
     sf2d_draw_texture_scale(progFull, back->X + 8, back->Y + 160, xScale, 1);
 }

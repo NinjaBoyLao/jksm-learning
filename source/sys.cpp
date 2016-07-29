@@ -16,16 +16,18 @@
 #include "titles.h"
 #include "hbfilter.h"
 
+#include "file.h"
+
 void loadImgs()
 {
-    bar = sf2d_create_texture_mem_RGBA8(TopBar.pixel_data, TopBar.width, TopBar.height, TEXFMT_RGBA8, SF2D_PLACE_RAM);
+    topBarInit();
     textboxInit();
     progressBarInit();
 }
 
 void freeImgs()
 {
-    sf2d_free_texture(bar);
+    topBarExit();
     textboxExit();
     progressBarExit();
 }
@@ -73,9 +75,6 @@ void sysInit()
     //Set clear to black
     sf2d_set_clear_color(RGBA8(clearColor[0], clearColor[1], clearColor[2], 255));
 
-    sf2d_set_3D(0);
-
-    //Load graphics needed
     loadImgs();
 
     //Start sftd
@@ -100,7 +99,7 @@ void sysInit()
     Result Res = FSUSER_OpenArchive(&sdArch, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""));
     if(Res)
     {
-        showMessage("Error opening SDMC archive!");
+        showError("Error opening SDMC archive", (unsigned)Res);
     }
 
     createDir("/JKSV/Saves");

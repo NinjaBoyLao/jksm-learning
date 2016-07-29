@@ -147,7 +147,7 @@ bool deleteSV(const titleData t)
     Result res = FSUSER_ControlSecureSave(SECURESAVE_ACTION_DELETE, &in, 8, &out, 1);
     if(res)
     {
-        showMessage("Failed to delete secure value!");
+        showError("Failed to delete secure value", (u32)res);
         return false;
     }
 
@@ -201,9 +201,7 @@ void deleteExtdata(const titleData dat)
     Result res = FSUSER_DeleteExtSaveData(del);
     if(res)
     {
-        char tmp[256];
-        sprintf(tmp, "Error deleting ExtData! 0x%08X.", (unsigned)res);
-        showMessage(tmp);
+        showError("Error deleting Extra Data", (u32)res);
     }
 }
 
@@ -212,19 +210,16 @@ void createExtData(const titleData dat)
     FS_ExtSaveDataInfo create;
     create.mediaType = MEDIATYPE_SD;
     create.saveId = dat.extdata;
-
     smdh_s *tempSmdh = loadSMDH(dat.low, dat.high, dat.media);
 
     //100 should be enough, right?
     Result res = FSUSER_CreateExtSaveData(create, 100, 100, 0x10000000, sizeof(smdh_s), (u8 *)tempSmdh);
     if(res)
     {
-        char error[256];
-        sprintf(error, "Error creating extData! 0x%08X.", (unsigned)res);
-        showMessage(error);
+        showError("Error creating Extra Data", (u32)res);
     }
     else
-        showMessage("ExtData created successfully!");
+        showMessage("ExtData created!", "Success!");
 
     delete tempSmdh;
 }
@@ -276,6 +271,11 @@ void fsStart()
 void fsEnd()
 {
     fsEndUseSession();
+}
+
+void fsCommitData(FS_Archive arch)
+{
+    FSUSER_ControlArchive(arch, ARCHIVE_ACTION_COMMIT_SAVE_DATA, NULL, 0, NULL, 0);
 }
 
 //I seriously can't remember why I put space in there. I don't like it anymore.
@@ -330,7 +330,9 @@ std::u16string safeString(const std::u16string s)
     return ret;
 }
 
-extern void prepMain(), prepBackMenu(), prepSaveMenu(), prepExtMenu(), prepNandBackup(), prepSharedMenu(), prepSharedBackMenu();
+extern void prepMain(), prepBackMenu(), prepSaveMenu();
+extern void prepExtMenu(), prepNandBackup(), prepSharedMenu();
+extern void prepSharedBackMenu(), prepExtras();
 
 void prepareMenus()
 {
@@ -341,4 +343,5 @@ void prepareMenus()
     prepNandBackup();
     prepSharedMenu();
     prepSharedBackMenu();
+    prepExtras();
 }

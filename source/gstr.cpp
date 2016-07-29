@@ -37,15 +37,17 @@ std::string GetString(const char *hint)
     return std::string(input);
 }
 
-int getInt(const char *hint, int maxValue)
+int getInt(const char *hint, unsigned init, int maxValue)
 {
     SwkbdState keyState;
-    char input[4];
+    char input[8];
+    sprintf(input, "%u", init);
 
-    swkbdInit(&keyState, SWKBD_TYPE_NUMPAD, 2, 4);
+    swkbdInit(&keyState, SWKBD_TYPE_NUMPAD, 2, 8);
     swkbdSetHintText(&keyState, hint);
+    swkbdSetInitialText(&keyState, input);
 
-    SwkbdButton pressed = swkbdInputText(&keyState, input, 4);
+    SwkbdButton pressed = swkbdInputText(&keyState, input, 8);
     int ret;
     //Cancel
     if(pressed == SWKBD_BUTTON_LEFT)

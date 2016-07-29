@@ -11,7 +11,8 @@
 #include "util.h"
 #include "ui.h"
 #include "button.h"
-#include "auto.h"
+#include "backup.h"
+#include "restore.h"
 
 const std::string helpText = "Press L to select multiple. Press R to select all. Press Y to backup selected. Press X to restore selected.";
 
@@ -35,7 +36,7 @@ void sdStartSelect()
 {
     if(sdTitle.size() < 1)
     {
-        showMessage("No installed titles were found!");
+        showMessage("No installed titles were found!", "Nope...");
         state = states::STATE_MAINMENU;
         return;
     }
@@ -59,7 +60,7 @@ void sdStartSelect()
     }
     else if(help.released(pos))
     {
-        showMessage(helpText.c_str());
+        showMessage(helpText.c_str(), "Help");
     }
     else if(down & KEY_Y)
     {

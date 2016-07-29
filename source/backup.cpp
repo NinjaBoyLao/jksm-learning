@@ -10,79 +10,40 @@
 #include "slot.h"
 #include "ui.h"
 #include "date.h"
+#include "file.h"
+#include "titles.h"
+#include "archive.h"
 
-void copyFileToSD(FS_Archive save, const std::u16string from, const std::u16string to)
+void copyFileToSD(FS_Archive arch, const std::u16string from, const std::u16string to)
 {
-    Handle sdFile, saveFile;
+    fsFile in(arch, from, FS_OPEN_READ);
+    fsFile out(sdArch, to, FS_OPEN_WRITE, in.size());
 
-    Result res = FSUSER_OpenFile(&saveFile, save, fsMakePath(PATH_UTF16, from.data()), FS_OPEN_READ, 0);
-    if(res)
-    {
-        showMessage("Error opening save file for reading!");
-        return;
-    }
-
-    res = FSUSER_OpenFile(&sdFile, sdArch, fsMakePath(PATH_UTF16, to.data()), FS_OPEN_CREATE | FS_OPEN_WRITE, 0);
-    if(res)
-    {
-        showMessage("Error creating/opening SD file!");
-        return;
-    }
-
-    //store how much was read
-    u32 read = 0;
-
-    //keep track of offset
-    u64 offset = 0;
-
-    //buffer for data
-    u8 * buff = new u8[buff_size];
-
-    u64 fSize;
-    FSFILE_GetSize(saveFile, &fSize);
-
-    //show what's being copied
+    u8 *buff = new u8[buff_size];
     std::string copyString = "Copying " + toString(from) + "...";
-    //This helps with the text being printed in the wrong spot.
-    evenString(&copyString);
-    progressBar fileProg((float)fSize, copyString.c_str());
-
-    //loop through file until finished
+    progressBar fileProg((float)in.size(), copyString.c_str(), "Copying file");
     do
     {
-        memset(buff, 0, buff_size);
-
-        hidScanInput();
-
-        u32 down = hidKeysDown();
-
-        res = FSFILE_Read(saveFile, &read, offset, buff, buff_size);
-        if(res==0)
+        u32 read = in.read(buff, buff_size);
+        u32 written = out.write(buff, read);
+        if(written != read)
         {
-            FSFILE_Write(sdFile, NULL, offset, buff, read, FS_WRITE_FLUSH);
-        }
-        else
-        {
-            writeErrorToBuff(buff, read, (unsigned)res);
-            FSFILE_Write(sdFile, NULL, offset, buff, read, FS_WRITE_FLUSH);
-        }
-        if(down & KEY_B)
+            showMessage("Something went wrong writing!", "UH OH!");
             break;
-
-        offset += read;
+        }
 
         sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
-            fileProg.draw(offset);
+            fileProg.draw((float)in.getOffset());
         sf2d_end_frame();
 
         sf2d_swapbuffers();
     }
-    while(offset < fSize);
+    while(in.getOffset() < in.size());
 
     delete[] buff;
 
-    FSFILE_Close(saveFile);
-    FSFILE_Close(sdFile);
+    in.close();
+    out.close();
 }
 
 void copyDirToSD(FS_Archive save, const std::u16string from, const std::u16string to)
@@ -152,7 +113,50 @@ bool backupData(const titleData dat, FS_Archive arch, int mode, bool autoName)
 
     //This gets annoying in auto mode
     if(!autoName)
-        showMessage("Complete!");
+        showMessage("Finished!", "Success!");
 
     return true;
+}
+
+void autoBackup(menu m)
+{
+    showMessage("This can take a few minutes depending on how many titles are selected.", "Info");
+
+
+    progressBar autoDump((float)m.getSelectCount(), "Copying saves... ", "Auto Backup");
+    //Keep track of what's done
+    float dumpCount = 0;
+    for(unsigned i = 0; i < m.getSize(); i++)
+    {
+        //This is for titles with no save archive ex. Fantasy Life
+        bool dumped = false;
+        FS_Archive saveArch;
+        if(m.optSelected(i) && openSaveArch(&saveArch, sdTitle[i], false))//if it's selected and we can open save archive
+        {
+            createTitleDir(sdTitle[i], MODE_SAVE);
+            backupData(sdTitle[i], saveArch, MODE_SAVE, true);
+            dumpCount++;
+            dumped = true;
+        }
+        FSUSER_CloseArchive(saveArch);
+
+        FS_Archive extArch;
+        if(m.optSelected(i) && openExtdata(&extArch, sdTitle[i], false))
+        {
+            createTitleDir(sdTitle[i], MODE_EXTDATA);
+            backupData(sdTitle[i], extArch, MODE_EXTDATA, true);
+
+            //check first to make sure we don't count it twice because no save arch
+            if(!dumped)
+                dumpCount++;
+        }
+        FSUSER_CloseArchive(extArch);
+
+        sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
+        autoDump.draw(i);
+        sf2d_end_frame();
+        sf2d_swapbuffers();
+    }
+
+    showMessage("Finished!", "Success!");
 }

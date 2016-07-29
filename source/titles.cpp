@@ -84,7 +84,7 @@ void sdTitlesInit()
         u64 *ids = new u64[count];
         AM_GetTitleList(NULL, MEDIATYPE_SD, count, ids);
 
-        progressBar load((float)count, "Loading titles...");
+        progressBar load((float)count, "Installed SD Titles...", "Loading");
         for(unsigned i = 0; i < count; i++)
         {
             if( (checkHigh(ids[i]) && !hbFilter(ids[i])) || devMode)
@@ -94,8 +94,11 @@ void sdTitlesInit()
                     sdTitle.push_back(newTitle);
             }
 
+            sf2d_start_frame(GFX_TOP, GFX_LEFT);
+            sf2d_end_frame();
+
             sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
-                load.draw(i);
+                load.draw((float)i);
             sf2d_end_frame();
 
             sf2d_swapbuffers();
@@ -171,21 +174,24 @@ void nandTitlesInit()
         u64 *ids = new u64[count];
         AM_GetTitleList(NULL, MEDIATYPE_NAND, count, ids);
 
-        progressBar load((float)count, "Loading NAND titles...");
+        progressBar load((float)count, "NAND Titles...", "Loading");
         for(unsigned i = 0; i < count; i++)
         {
             if(!(nandFilter(ids[i]) && ids[i]!=0) || devMode)
             {
                 titleData newData;
-                if( (newData.init(ids[i], MEDIATYPE_NAND) && newData.name[0]!=0) || devMode)
+                if( (newData.init(ids[i], MEDIATYPE_NAND) && !newData.name[0] == 0) || devMode)
                 {
                     sysSaveRedirect(&newData);
                     nandTitle.push_back(newData);
                 }
             }
 
+            sf2d_start_frame(GFX_TOP, GFX_LEFT);
+            sf2d_end_frame();
+
             sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
-                load.draw(i);
+                load.draw((float)i);
             sf2d_end_frame();
 
             sf2d_swapbuffers();

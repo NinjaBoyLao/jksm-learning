@@ -37,8 +37,8 @@ enum sharedOpts
 
 enum sharedBack
 {
-    exp,
-    imp,
+    _exp,
+    _imp,
     _back
 };
 
@@ -70,14 +70,14 @@ void sharedBackupMenu()
         FS_Archive arch;
         switch(sharedBackMenu.getSelected())
         {
-            case sharedBack::exp:
+            case sharedBack::_exp:
                 if(openSharedExt(&arch, selShared.extdata))
                 {
                     createTitleDir(selShared, MODE_SHARED);
                     backupData(selShared, arch, MODE_SHARED, false);
                 }
                 break;
-            case sharedBack::imp:
+            case sharedBack::_imp:
                 if(openSharedExt(&arch, selShared.extdata))
                     restoreData(selShared, arch, MODE_SHARED);
                 break;

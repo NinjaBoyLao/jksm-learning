@@ -37,7 +37,7 @@ std::string GetSlot(bool nSlot, const titleData dat, int Mode)
     dirList list(sdArch, Path);
     if(list.count()==0 && !nSlot)
     {
-        showMessage("Didn't find any data to import!");
+        showMessage("Didn't find any data to import!", "Nope.");
         return "";
     }
 
@@ -139,7 +139,7 @@ std::string GetSlot(bool nSlot, const titleData dat, int Mode)
         }
         else if(help.released(pos))
         {
-            showMessage(helpText.c_str());
+            showMessage(helpText.c_str(), "Help");
         }
         else if(down & KEY_B)
         {

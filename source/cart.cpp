@@ -18,7 +18,7 @@ bool cartCheck()
     FSUSER_CardSlotIsInserted(&cartInserted);
     if(!cartInserted)
     {
-        showMessage("No cartridge inserted!");
+        showMessage("No cartridge inserted!", "Error:");
         return false;
     }
 
@@ -27,7 +27,7 @@ bool cartCheck()
     FSUSER_GetCardType(&type);
     if(type!=CARD_CTR)
     {
-        showMessage("No DS support.");
+        showMessage("No DS support.", "Sorry...");
         return false;
     }
 

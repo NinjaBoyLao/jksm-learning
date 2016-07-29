@@ -102,7 +102,7 @@ std::u16string getSDPath()
             break;
         }
         else if(help.released(p))
-            showMessage(helpText.c_str());
+            showMessage(helpText.c_str(), "Help");
 
         sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
             sftd_draw_text(font, 0, 0, RGBA8(255, 255, 255 ,255), 12, toString(cPath).c_str());

@@ -6,8 +6,8 @@
 
 #include "archive.h"
 #include "backup.h"
-#include "restore.h"
 #include "menu.h"
+#include "restore.h"
 #include "titledata.h"
 #include "global.h"
 #include "util.h"
@@ -22,18 +22,6 @@ enum hblOpts
     impExt,
     exit
 };
-
-bool openSaveArch3dsx(FS_Archive *arch)
-{
-    Result res = FSUSER_OpenArchive(arch, ARCHIVE_SAVEDATA, fsMakePath(PATH_EMPTY, ""));
-    if(res)
-    {
-        showMessage("Error opening save archive!");
-        return false;
-    }
-
-    return true;
-}
 
 void start3dsxMode()
 {
@@ -89,7 +77,7 @@ void start3dsxMode()
                 case hblOpts::delSV:
                     fsEnd();
                     if(deleteSV(data))
-                        showMessage("Secure value successfully deleted!");
+                        showMessage("Secure value successfully deleted!", "Success!");
                     fsStart();
                     break;
                 case hblOpts::expExt:

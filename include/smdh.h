@@ -40,4 +40,5 @@ typedef struct
 }smdh_s;
 
 smdh_s *loadSMDH(u32 Low, u32 High, u8 Media);
+char16_t *loadTitle(u32 low, u32 high, FS_MediaType media);
 #endif // SMDH_H

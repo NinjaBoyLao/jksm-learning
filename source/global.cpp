@@ -19,12 +19,23 @@
 #include "hbfilter.h"
 #include "extra.h"
 #include "shared.h"
+#include "img.h"
 
 unsigned buff_size = 0x10000;
 
 sftd_font * font;
 
-sf2d_texture * bar;
+static sf2d_texture * bar;
+
+void topBarInit()
+{
+    bar = sf2d_create_texture_mem_RGBA8(TopBar.pixel_data, TopBar.width, TopBar.height, TEXFMT_RGBA8, SF2D_PLACE_RAM);
+}
+
+void topBarExit()
+{
+    sf2d_free_texture(bar);
+}
 
 FS_Archive sdArch;
 
@@ -173,7 +184,7 @@ void mainMenu()
     killApp(down);
 
     sf2d_start_frame(GFX_TOP, GFX_LEFT);
-        drawTopBar(U"JKSM - 7/26/2016");
+        drawTopBar(U"JKSM - 7/28/2016");
         mMenu.draw();
     sf2d_end_frame();
 

@@ -41,8 +41,9 @@ extern unsigned buff_size;
 //This is the font used to print everything
 extern sftd_font *font;
 
-//This is the bar you see at the top
-extern sf2d_texture *bar;
+//This is for the bar you see at the top
+void topBarInit();
+void topBarExit();
 
 //SDMC Archive. Seems to write faster using this. Might just be me though
 extern FS_Archive sdArch;

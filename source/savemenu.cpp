@@ -72,7 +72,7 @@ void showSaveMenu()
                 break;
             case saveOpts::delSV:
                 if(deleteSV(*curTitle))
-                    showMessage("Secure value successfully deleted!");
+                    showMessage("Secure value successfully deleted!", "Success!");
                 break;
             case saveOpts::delSav:
                 if(openSaveArch(&saveArch, *curTitle, true) && confirm("Are you sure you want to delete this title's current save data?"))

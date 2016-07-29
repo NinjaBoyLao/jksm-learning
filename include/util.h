@@ -1,6 +1,7 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+#include <sf2d.h>
 #include <string>
 
 #include "titledata.h"
@@ -52,7 +53,10 @@ bool fexists(const char *path);
 //Starts and ends fs sessions for HBL mode
 void fsStart();
 void fsEnd();
+void fsCommitData(FS_Archive arch);
 
 //Sets up menus
 void prepareMenus();
+
+sf2d_texture *createTexMem(struct img);
 #endif // UTIL_H

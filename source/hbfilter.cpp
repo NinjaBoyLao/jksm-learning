@@ -22,20 +22,20 @@ bool downloadFilter()
     Result res = httpcOpenContext(&filter, HTTPC_METHOD_GET, "https://raw.githubusercontent.com/J-D-K/JKSM/master/filter.txt", 1);
     if(res)
     {
-        showMessage("Open context.");
+        showError("Open context.", (unsigned)res);
         return false;
     }
 
     res = httpcSetSSLOpt(&filter, SSLCOPT_DisableVerify);
     if(res)
     {
-        showMessage("Set SSL Opt.");
+        showError("Set SSL Opt.", (u32)res);
     }
 
     res = httpcBeginRequest(&filter);
     if(res)
     {
-        showMessage("Begin request.");
+        showError("Begin request.", (u32)res);
         return false;
     }
 
@@ -43,7 +43,7 @@ bool downloadFilter()
     res = httpcGetResponseStatusCode(&filter, &code, 0);
     if(res || code!=200)
     {
-        showMessage("Not found?");
+        showMessage("Not found?", "wut");
         return false;
     }
 
@@ -51,7 +51,7 @@ bool downloadFilter()
     res = httpcGetDownloadSizeState(&filter, NULL, &fSize);
     if(res)
     {
-        showMessage("Download size.");
+        showError("Download size.", (u32)res);
         return false;
     }
 
@@ -59,7 +59,7 @@ bool downloadFilter()
     res = httpcDownloadData(&filter, buff, fSize, NULL);
     if(res)
     {
-        showMessage("Download data.");
+        showError("Download data.", (u32)res);
         delete[] buff;
         return false;
     }
@@ -70,7 +70,7 @@ bool downloadFilter()
 
     delete[] buff;
 
-    showMessage("Filter downloaded.");
+    showMessage("Filter downloaded.", "Info");
 
     return true;
 }
@@ -102,14 +102,8 @@ void loadFilterList()
 bool hbFilter(u64 id)
 {
     u32 low = (u32)id;
-    //it's easier to filter retroarch this way
-    char tmp[16];
-    AM_GetTitleProductCode(MEDIATYPE_SD, id, tmp);
-    std::string test;
-    test.assign(tmp, 0, 5);
-    if(test.compare("RARCH")==0)
-        return true;
-
+    //Don't need code specifically for retroarch.
+    //Thank you ksanislo for titledb
     for(unsigned i = 0; i < filterID.size(); i++)
     {
         if(low==filterID[i])
