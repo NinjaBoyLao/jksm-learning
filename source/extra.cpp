@@ -33,7 +33,7 @@ void setPlayCoins()
         coinAmount = getInt("Enter a number between 0 and 300",  coinAmount, 300);
         if(coinAmount != -1)
         {
-            gameCoin.seek(0x4, seek_beg);
+            gameCoin.seek(-2, seek_cur);
             gameCoin.putByte(coinAmount);
             gameCoin.putByte(coinAmount >> 8);
         }

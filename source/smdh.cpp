@@ -19,18 +19,17 @@
     FS_Path binFilePath = {PATH_BINARY, 0x14, filePath};
 
     fsFile smdh(ARCHIVE_SAVEDATA_AND_CONTENT, binArchPath, binFilePath, FS_OPEN_READ);
-    if(smdh.isOpened())
+    if(smdh.isOpened() && (smdh.read(ret, NULL, sizeof(smdh_s)) == 0))
     {
-        smdh.read((u8 *)ret, sizeof(smdh_s));
+        smdh.close();
+        return ret;
     }
     else
     {
+        smdh.close();
         delete ret;
-        ret = NULL;
+        return NULL;
     }
-
-    smdh.close();
-    return ret;
 }*/
 
 smdh_s *loadSMDH(u32 Low, u32 High, u8 Media)

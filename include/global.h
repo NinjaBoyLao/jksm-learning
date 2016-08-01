@@ -17,6 +17,7 @@
 
 extern int state, prevState;
 extern titleData *curTitle;
+extern u8 sysLanguage;
 
 enum states
 {

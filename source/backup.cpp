@@ -22,10 +22,11 @@ void copyFileToSD(FS_Archive arch, const std::u16string from, const std::u16stri
     u8 *buff = new u8[buff_size];
     std::string copyString = "Copying " + toString(from) + "...";
     progressBar fileProg((float)in.size(), copyString.c_str(), "Copying file");
+    u32 read, written;
     do
     {
-        u32 read = in.read(buff, buff_size);
-        u32 written = out.write(buff, read);
+        in.read(buff, &read, buff_size);
+        out.write(buff, &written, read);
         if(written != read)
         {
             showMessage("Something went wrong writing!", "UH OH!");

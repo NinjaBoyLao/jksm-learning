@@ -63,6 +63,7 @@ void drawTopBar(const std::u32string nfo)
 //This is what I came up with.
 int state = states::STATE_MAINMENU, prevState = states::STATE_MAINMENU;
 titleData *curTitle = NULL;
+u8 sysLanguage = 1;
 
 void handleState()
 {
@@ -184,7 +185,7 @@ void mainMenu()
     killApp(down);
 
     sf2d_start_frame(GFX_TOP, GFX_LEFT);
-        drawTopBar(U"JKSM - 7/28/2016");
+        drawTopBar(U"JKSM - 7/31/2016");
         mMenu.draw();
     sf2d_end_frame();
 

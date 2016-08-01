@@ -194,9 +194,7 @@ bool runningUnder()
 
 void deleteExtdata(const titleData dat)
 {
-    FS_ExtSaveDataInfo del;
-    del.mediaType = MEDIATYPE_SD;
-    del.saveId = dat.extdata;
+    FS_ExtSaveDataInfo del = {MEDIATYPE_SD, 0, 0, dat.extdata, 0};
 
     Result res = FSUSER_DeleteExtSaveData(del);
     if(res)
@@ -207,9 +205,7 @@ void deleteExtdata(const titleData dat)
 
 void createExtData(const titleData dat)
 {
-    FS_ExtSaveDataInfo create;
-    create.mediaType = MEDIATYPE_SD;
-    create.saveId = dat.extdata;
+    FS_ExtSaveDataInfo create = {MEDIATYPE_SD, 0, 0, dat.extdata, 0};
     smdh_s *tempSmdh = loadSMDH(dat.low, dat.high, dat.media);
 
     //100 should be enough, right?

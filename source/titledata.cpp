@@ -43,7 +43,10 @@ bool titleData::init(u64 _id, FS_MediaType mediaType)
     if(smdh == NULL)
         return false;
 
-    name = (char16_t *)smdh->applicationTitles[1].shortDescription;
+    name = (char16_t *)smdh->applicationTitles[sysLanguage].shortDescription;
+    //Default to english if title is empty for language
+    if(name.empty())
+        name = (char16_t *)smdh->applicationTitles[1].shortDescription;
     u32Name = tou32(name);
     nameSafe = safeString(name);
 

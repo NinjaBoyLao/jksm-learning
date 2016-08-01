@@ -24,9 +24,9 @@ class fsFile
         bool isOpened();
 
         //Reads to buff. Returns number of read bytes
-        u32 read(u8 *buff, u32 max);
+        Result read(void *buff, u32 *readOut, u32 max);
         //Same, only write
-        u32 write(u8 *dat, u32 size);
+        Result write(void *dat, u32 *written, u32 size);
         //gets next byte in file
         u8 getByte();
         //writes byte at offset

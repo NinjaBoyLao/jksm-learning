@@ -91,6 +91,7 @@ void sysInit()
     srvInit();
     hidInit();
     acInit();
+    cfguInit();
     httpcInit(0);
 
     loadFilterList();
@@ -101,6 +102,8 @@ void sysInit()
     {
         showError("Error opening SDMC archive", (unsigned)Res);
     }
+
+    CFGU_GetSystemLanguage(&sysLanguage);
 
     createDir("/JKSV/Saves");
     createDir("/JKSV/ExtData");
@@ -122,6 +125,7 @@ void sysExit()
     srvExit();
     hidExit();
     acExit();
+    cfguExit();
     httpcExit();
 
     freeImgs();

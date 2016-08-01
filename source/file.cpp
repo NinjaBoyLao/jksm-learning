@@ -90,32 +90,31 @@ bool fsFile::isOpened()
     return opened;
 }
 
-u32 fsFile::read(u8 *buff, u32 max)
+Result fsFile::read(void *buff, u32 *readOut, u32 max)
 {
-    u32 readBytes = 0;
-    Result res = FSFILE_Read(fileHandle, &readBytes, offset, buff, max);
+    Result res = FSFILE_Read(fileHandle, readOut, offset, buff, max);
     if(res)
     {
-        if(readBytes > max)
-            readBytes = max;
+        if(*readOut > max)
+            *readOut = max;
 
-        writeErrorToBuff(buff, readBytes, (unsigned)res);
+        writeErrorToBuff((u8 *)buff, *readOut, (unsigned)res);
 
     }
 
-    offset += readBytes;
+    offset += *readOut;
 
-    return readBytes;
+    return res;
 }
 
-u32 fsFile::write(u8 *dat, u32 size)
+Result fsFile::write(void *dat, u32 *written, u32 size)
 {
-    u32 written = 0;
-    FSFILE_Write(fileHandle, &written, offset, dat, size, FS_WRITE_FLUSH);
+    *written = 0;
+    Result res = FSFILE_Write(fileHandle, written, offset, dat, size, FS_WRITE_FLUSH);
 
-    offset += written;
+    offset += *written;
 
-    return written;
+    return res;
 }
 
 void fsFile::seek(int pos, u8 seekFrom)

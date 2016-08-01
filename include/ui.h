@@ -1,6 +1,7 @@
 #ifndef UI_H
 #define UI_H
 
+#include <3ds.h>
 #include <string>
 #include "textbox.h"
 

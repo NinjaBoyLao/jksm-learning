@@ -21,6 +21,8 @@ int main(int argc, const char * argv[])
     u32 held = hidKeysHeld();
     if((held & KEY_R) && (held & KEY_L))
         devMode = true;
+    else if(held & KEY_R)
+        sysLanguage = 0;
 
     if(runningUnder() && !devMode)
     {

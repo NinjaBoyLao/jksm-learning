@@ -180,10 +180,23 @@ void nandTitlesInit()
             if(!(nandFilter(ids[i]) && ids[i]!=0) || devMode)
             {
                 titleData newData;
-                if( (newData.init(ids[i], MEDIATYPE_NAND) && !newData.name[0] == 0) || devMode)
+                if( (newData.init(ids[i], MEDIATYPE_NAND) && !newData.name.empty()))
                 {
                     sysSaveRedirect(&newData);
                     nandTitle.push_back(newData);
+                }
+                else
+                {
+                    switch(newData.id)
+                    {
+                        case 0x0004003000008F02:
+                            newData.name = tou16("Home Menu");
+                            newData.nameSafe = newData.name;
+                            newData.u32Name = tou32(newData.name);
+                            nandTitle.push_back(newData);
+                            break;
+
+                    }
                 }
             }
 
