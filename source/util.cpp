@@ -61,9 +61,10 @@ std::u32string modeText(int mode)
         case MODE_SHARED:
             return U" : Shared ExtData";
             break;
+        default:
+            return U"";
+            break;
     }
-
-    return U"";
 }
 
 void writeErrorToBuff(u8 *buff, size_t bSize, unsigned error)
@@ -177,7 +178,6 @@ std::u16string getPath(int mode)
             return tou16("/JKSV/");
             break;
     }
-    return (char16_t *)"";
 }
 
 bool runningUnder()
@@ -185,11 +185,7 @@ bool runningUnder()
     u64 id;
     APT_GetProgramID(&id);
 
-    //check if it's using its own ID
-    if(id==0x0004000002c23200)
-        return false;
-
-    return true;
+    return id == 0x0004000002c23200 ? false : true;
 }
 
 void deleteExtdata(const titleData dat)
@@ -198,9 +194,9 @@ void deleteExtdata(const titleData dat)
 
     Result res = FSUSER_DeleteExtSaveData(del);
     if(res)
-    {
         showError("Error deleting Extra Data", (u32)res);
-    }
+    else
+        showMessage("Extra Data deleted!", "Success");
 }
 
 void createExtData(const titleData dat)
@@ -209,7 +205,16 @@ void createExtData(const titleData dat)
     smdh_s *tempSmdh = loadSMDH(dat.low, dat.high, dat.media);
 
     //100 should be enough, right?
-    Result res = FSUSER_CreateExtSaveData(create, 100, 100, 0x10000000, sizeof(smdh_s), (u8 *)tempSmdh);
+    Result res;
+    if(tempSmdh == NULL)
+    {
+        u8 *emptySmdh = new u8[sizeof(smdh_s)];
+        memset(emptySmdh, 0, sizeof(smdh_s));
+        res = FSUSER_CreateExtSaveData(create, 100, 100, 0x10000000, sizeof(smdh_s), emptySmdh);
+        delete[] emptySmdh;
+    }
+    else
+        res = FSUSER_CreateExtSaveData(create, 100, 100, 0x10000000, sizeof(smdh_s), (u8 *)tempSmdh);
     if(res)
     {
         showError("Error creating Extra Data", (u32)res);
@@ -229,20 +234,12 @@ void evenString(std::string *test)
 //Just returns whether or not the touch screen is pressed anywhere.
 bool touchPressed(touchPosition p)
 {
-    //I don't think either of these are ever 0
-    //unless the screen isn't touched.
-    if(p.px>0 || p.py>0)
-        return true;
-
-    return false;
+    return (p.px > 0 || p.py > 0);
 }
 
 bool modeExtdata(int mode)
 {
-    if(mode==MODE_EXTDATA || mode==MODE_BOSS || mode==MODE_SHARED)
-        return true;
-
-    return false;
+    return (mode==MODE_EXTDATA || mode==MODE_BOSS || mode==MODE_SHARED);
 }
 
 bool fexists(const char *path)

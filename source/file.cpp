@@ -90,6 +90,11 @@ bool fsFile::isOpened()
     return opened;
 }
 
+bool fsFile::eof()
+{
+    return offset < fileSize ? false : true;
+}
+
 Result fsFile::read(void *buff, u32 *readOut, u32 max)
 {
     Result res = FSFILE_Read(fileHandle, readOut, offset, buff, max);
@@ -150,10 +155,8 @@ void fsFile::putByte(u8 put)
 bool fsFile::close()
 {
     Result res = FSFILE_Close(fileHandle);
-    if(res)
-        return false;
 
-    return true;
+    return res == 0;
 }
 
 u64 fsFile::size()

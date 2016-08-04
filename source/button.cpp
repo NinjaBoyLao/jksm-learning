@@ -36,10 +36,7 @@ void button::draw()
 //This checks whether the stylus is inside the button
 bool button::isOver(touchPosition p)
 {
-    if( (p.px > X && p.px < X + width) && (p.py > Y && p.py < Y + height) )
-        return true;
-
-    return false;
+   return (p.px > X && p.px < X + width) && (p.py > Y && p.py < Y + height);
 }
 
 //Checks if the stylus was removed.

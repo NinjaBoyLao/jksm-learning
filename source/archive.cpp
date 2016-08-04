@@ -38,7 +38,7 @@ bool openSaveArch3dsx(FS_Archive *arch)
 
 bool openExtdata(FS_Archive *out, const titleData dat, bool show)
 {
-    u32 path[] = {MEDIATYPE_SD, dat.extdata, 0};
+    u32 path[3] = {MEDIATYPE_SD, dat.extdata, 0};
 
     FS_Path binPath = {PATH_BINARY, 12, path};
 

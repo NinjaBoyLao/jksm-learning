@@ -39,7 +39,7 @@ void copyFileToSD(FS_Archive arch, const std::u16string from, const std::u16stri
 
         sf2d_swapbuffers();
     }
-    while(in.getOffset() < in.size());
+    while(!in.eof());
 
     delete[] buff;
 

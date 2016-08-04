@@ -4,6 +4,7 @@
 #include <sftd.h>
 #include <string>
 #include <vector>
+#include <ctype.h>
 #include <algorithm>
 
 #include "hbfilter.h"
@@ -23,8 +24,9 @@ struct
     {
         for(unsigned i = 0; i < a.name.length(); i++)
         {
-            if(a.name[i]!=b.name[i])
-                return a.name[i] < b.name[i];
+            int aChar = tolower(a.name[i]), bChar = tolower(b.name[i]);
+            if(aChar != bChar)
+                return aChar < bChar;
         }
 
         return false;
@@ -35,10 +37,7 @@ bool checkHigh(u64 id)
 {
     u32 high = id >> 32;
     //Games + Demos
-    if(high == 0x00040000 || high == 0x00040002)
-        return true;
-
-    return false;
+    return (high == 0x00040000 || high == 0x00040002);
 }
 
 extern void prepSDSelect();

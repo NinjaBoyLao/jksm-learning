@@ -40,7 +40,7 @@ void copyFiletoArch(FS_Archive arch, const std::u16string from, const std::u16st
 
         sf2d_swapbuffers();
     }
-    while(in.getOffset() < in.size());
+    while(!in.eof());
 
     delete[] buff;
 

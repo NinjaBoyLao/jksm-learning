@@ -22,6 +22,7 @@ class fsFile
 
         //returns if file is opened
         bool isOpened();
+        bool eof();
 
         //Reads to buff. Returns number of read bytes
         Result read(void *buff, u32 *readOut, u32 max);

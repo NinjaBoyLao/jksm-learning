@@ -16,8 +16,6 @@
 #include "titles.h"
 #include "hbfilter.h"
 
-#include "file.h"
-
 void loadImgs()
 {
     topBarInit();

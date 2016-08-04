@@ -33,8 +33,6 @@ char *GetDate(int Format)
 //this returns the time for the top bar
 std::string RetTime()
 {
-    std::string Ret;
-
     time_t Raw;
     time(&Raw);
     tm *Time = localtime(&Raw);
@@ -43,7 +41,5 @@ std::string RetTime()
 
     sprintf(Tmp, "%02d:%02d", Time->tm_hour, Time->tm_min);
 
-    Ret = Tmp;
-
-    return Ret;
+    return std::string(Tmp);
 }
