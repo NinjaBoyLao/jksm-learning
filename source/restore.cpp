@@ -78,15 +78,15 @@ bool restoreData(const titleData dat, FS_Archive arch, int mode)
 {
     std::u16string sdPath;
 
-    std::string keepName = GetSlot(false, dat, mode);
+    std::u16string keepName = getFolder(dat, mode, false);
     if(keepName.empty())
         return false;
 
-    std::string ask = "Are you sure you want to import " + keepName + "?";
+    std::string ask = "Are you sure you want to import " + toString(keepName) + "?";
     if(!confirm(ask.c_str()))
         return false;
 
-    sdPath = getPath(mode) + dat.nameSafe + (char16_t)'/' + tou16(keepName.c_str()) + (char16_t)'/';
+    sdPath = getPath(mode) + dat.nameSafe + (char16_t)'/' + keepName + (char16_t)'/';
 
     std::u16string archPath = (char16_t *)"/";
 

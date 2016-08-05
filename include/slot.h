@@ -7,6 +7,6 @@
 //nSlot = whether to allow new dir creation
 //Data = TitleData object containing info
 //Ext = Using ExtData
-std::string GetSlot(bool nSlot, const titleData dat, int Ext);
+std::u16string getFolder(const titleData dat, int mode, bool newFolder);
 
 #endif // SLOT_H

@@ -10,3 +10,4 @@ release/
 *.exe
 *.log
 *.7z
+*.project

@@ -60,14 +60,11 @@ unsigned dirList::count()
 //returns true if item is a directory
 bool dirList::isDir(int i)
 {
-    if(entry[i].attributes==FS_ATTRIBUTE_DIRECTORY)
-        return true;
-
-    return false;
+    return entry[i].attributes == FS_ATTRIBUTE_DIRECTORY;
 }
 
 //returns entry's name as u16string
 std::u16string dirList::retItem(int i)
 {
-    return (char16_t *)entry[i].name;
+    return std::u16string((char16_t *)entry[i].name);
 }

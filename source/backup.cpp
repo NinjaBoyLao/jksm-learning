@@ -91,7 +91,7 @@ bool backupData(const titleData dat, FS_Archive arch, int mode, bool autoName)
     if(autoName)
         slot = tou16(GetDate(FORMAT_YMD));
     else
-        slot = safeString(tou16(GetSlot(true, dat, mode).c_str()));
+        slot = getFolder(dat, mode, true);
 
     if(slot.empty())
         return false;
@@ -99,7 +99,7 @@ bool backupData(const titleData dat, FS_Archive arch, int mode, bool autoName)
     //get path returns path to /JKSV/[DIR]
     pathOut = getPath(mode) + dat.nameSafe + (char16_t)'/' + slot;
     std::u16string recreate = pathOut;//need this later after directory is deleted.
-    pathOut += L'/';
+    pathOut += (char16_t)'/';
 
     //I only do this because games use more files for more slots.
     FSUSER_DeleteDirectoryRecursively(sdArch, fsMakePath(PATH_UTF16, pathOut.data()));
@@ -107,8 +107,7 @@ bool backupData(const titleData dat, FS_Archive arch, int mode, bool autoName)
     FSUSER_CreateDirectory(sdArch, fsMakePath(PATH_UTF16, recreate.data()), 0);
 
     //archive root
-    std::u16string pathIn;
-    pathIn += L'/';
+    std::u16string pathIn = (char16_t *)"/";
 
     copyDirToSD(arch, pathIn, pathOut);
 

@@ -25,7 +25,7 @@ std::u32string tou32(const std::u16string t)
 std::u16string tou16(const char *t)
 {
     char16_t tmp[256];
-    memset(tmp, 0, sizeof(char16_t) * 256);
+    memset(tmp, 0, 256);
 
     utf8_to_utf16((uint16_t *)tmp, (uint8_t *)t, 256);
 
