@@ -1,6 +1,7 @@
 build/
 test/
 release/
+.codelite/
 *.o
 *.elf
 *.wav
