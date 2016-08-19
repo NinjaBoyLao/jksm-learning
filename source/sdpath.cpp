@@ -38,7 +38,7 @@ void upDir(dirList *d, menu *m, std::u16string *path)
     unsigned i;
     for(i = (path->length() - 2); i > 0; i--)
     {
-        if(path->c_str()[i]==L'/')
+        if(path->c_str()[i] == L'/')
             break;
     }
     path->assign(*path, 0, i + 1);
@@ -105,9 +105,9 @@ std::u16string getSDPath()
             showMessage(helpText.c_str(), "Help");
 
         sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
-            sftd_draw_text(font, 0, 0, RGBA8(255, 255, 255 ,255), 12, toString(cPath).c_str());
-            sdBrowse.draw();
-            help.draw();
+        sftd_draw_text(font, 0, 0, RGBA8(255, 255, 255, 255), 12, toString(cPath).c_str());
+        sdBrowse.draw();
+        help.draw();
         sf2d_end_frame();
 
         sf2d_swapbuffers();

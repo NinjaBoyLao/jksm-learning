@@ -76,13 +76,13 @@ void sdStartSelect()
     killApp(down);
 
     sf2d_start_frame(GFX_TOP, GFX_LEFT);
-        drawTopBar(U"Select a title");
-        titleMenu.draw();
+    drawTopBar(U"Select a title");
+    titleMenu.draw();
     sf2d_end_frame();
 
     sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
-        sdTitle[titleMenu.getSelected()].printInfo();
-        help.draw();
+    sdTitle[titleMenu.getSelected()].printInfo();
+    help.draw();
     sf2d_end_frame();
 
     sf2d_swapbuffers();

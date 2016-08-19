@@ -1,6 +1,7 @@
 #include <3ds.h>
 #include <sf2d.h>
 #include <sftd.h>
+#include <sfil.h>
 #include <stdio.h>
 #include <string>
 
@@ -19,7 +20,6 @@
 #include "hbfilter.h"
 #include "extra.h"
 #include "shared.h"
-#include "img.h"
 
 unsigned buff_size = 0x10000;
 
@@ -29,7 +29,7 @@ static sf2d_texture * bar;
 
 void topBarInit()
 {
-    bar = sf2d_create_texture_mem_RGBA8(TopBar.pixel_data, TopBar.width, TopBar.height, TEXFMT_RGBA8, SF2D_PLACE_RAM);
+    bar = sfil_load_PNG_file("romfs:/img/topBar.png", SF2D_PLACE_RAM);
 }
 
 void topBarExit()
@@ -39,7 +39,10 @@ void topBarExit()
 
 FS_Archive sdArch;
 
-bool hbl = false, devMode = false, kill = false, centered = true;
+bool hbl = false, devMode = false, kill = false;
+
+//config
+bool centered = true, autoBack = false, useLang = false;
 
 //default colors
 u8 clearColor[3] = {0, 0, 0};
@@ -133,7 +136,7 @@ void prepMain()
     mMenu.addItem("Shared ExtData");
     mMenu.addItem("Refresh Games");
     mMenu.addItem("Download Filter");
-    mMenu.addItem("Extras");
+    mMenu.addItem("Config/Extras");
     mMenu.addItem("Exit");
 
     mMenu.autoVert();
@@ -185,8 +188,8 @@ void mainMenu()
     killApp(down);
 
     sf2d_start_frame(GFX_TOP, GFX_LEFT);
-        drawTopBar(U"JKSM - 8/4/2016");
-        mMenu.draw();
+    drawTopBar(U"JKSM - 8/19/2016");
+    mMenu.draw();
     sf2d_end_frame();
 
     sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);

@@ -21,8 +21,9 @@ int main(int argc, const char * argv[])
     u32 held = hidKeysHeld();
     if((held & KEY_R) && (held & KEY_L))
         devMode = true;
+    //This is for making sure I didn't butcher the font
     else if(held & KEY_R)
-        sysLanguage = 0;
+        sysLanguage = CFG_LANGUAGE_JP;
 
     if(runningUnder() && !devMode)
     {

@@ -16,15 +16,15 @@ char *GetDate(int Format)
     switch(Format)
     {
         case FORMAT_YDM:
-        {
-            sprintf(Ret, "%04d-%02d-%02d_%02d-%02d", Time->tm_year + 1900, Time->tm_mday, Time->tm_mon + 1, Time->tm_hour, Time->tm_min);
-            break;
-        }
+            {
+                sprintf(Ret, "%04d-%02d-%02d_%02d-%02d", Time->tm_year + 1900, Time->tm_mday, Time->tm_mon + 1, Time->tm_hour, Time->tm_min);
+                break;
+            }
         case FORMAT_YMD:
-        {
-            sprintf(Ret, "%04d-%02d-%02d_%02d-%02d", Time->tm_year + 1900, Time->tm_mon + 1, Time->tm_mday, Time->tm_hour, Time->tm_min);
-            break;
-        }
+            {
+                sprintf(Ret, "%04d-%02d-%02d_%02d-%02d", Time->tm_year + 1900, Time->tm_mon + 1, Time->tm_mday, Time->tm_hour, Time->tm_min);
+                break;
+            }
     }
 
     return Ret;

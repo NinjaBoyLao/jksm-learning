@@ -22,7 +22,8 @@ dirList::dirList(FS_Archive arch, const std::u16string p)
         FS_DirectoryEntry getEnt;
         FSDIR_Read(d, &read, 1, &getEnt);
         entry.push_back(getEnt);
-    }while(read > 0);
+    }
+    while(read > 0);
 
     FSDIR_Close(d);
 }
@@ -46,7 +47,8 @@ void dirList::reassign(const std::u16string p)
         FS_DirectoryEntry getEnt;
         FSDIR_Read(d, &read, 1, &getEnt);
         entry.push_back(getEnt);
-    }while(read > 0);
+    }
+    while(read > 0);
 
     FSDIR_Close(d);
 }

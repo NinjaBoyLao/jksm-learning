@@ -34,7 +34,7 @@ void copyFileToSD(FS_Archive arch, const std::u16string from, const std::u16stri
         }
 
         sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
-            fileProg.draw((float)in.getOffset());
+        fileProg.draw((float)in.getOffset());
         sf2d_end_frame();
 
         sf2d_swapbuffers();
@@ -89,7 +89,11 @@ bool backupData(const titleData dat, FS_Archive arch, int mode, bool autoName)
 
     //if auto, just use date/time
     if(autoName)
+    {
         slot = tou16(GetDate(FORMAT_YMD));
+        if(autoBack)
+            slot += tou16(" - AutoBack");
+    }
     else
         slot = getFolder(dat, mode, true);
 
@@ -131,7 +135,7 @@ void autoBackup(menu m)
         //This is for titles with no save archive ex. Fantasy Life
         bool dumped = false;
         FS_Archive saveArch;
-        if(m.optSelected(i) && openSaveArch(&saveArch, sdTitle[i], false))//if it's selected and we can open save archive
+        if(m.optSelected(i) && openSaveArch(&saveArch, sdTitle[i], false))   //if it's selected and we can open save archive
         {
             createTitleDir(sdTitle[i], MODE_SAVE);
             backupData(sdTitle[i], saveArch, MODE_SAVE, true);

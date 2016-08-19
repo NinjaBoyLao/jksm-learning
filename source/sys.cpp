@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "font_ttf.h"
-#include "img.h"
 #include "global.h"
 #include "textbox.h"
 #include "ui.h"
@@ -50,6 +49,17 @@ void changeBuffSize()
     fclose(bSize);
 }
 
+void loadCfg()
+{
+    FILE *config = fopen("config", "rb");
+
+    centered = fgetc(config);
+    autoBack = fgetc(config);
+    useLang = fgetc(config);
+
+    fclose(config);
+}
+
 //I just use this so I don't have to type so much. I'm lazy
 void createDir(const char *path)
 {
@@ -58,6 +68,8 @@ void createDir(const char *path)
 
 void sysInit()
 {
+    romfsInit();
+
     mkdir("/JKSV", 0777);
     chdir("/JKSV");
 
@@ -65,8 +77,8 @@ void sysInit()
         loadCol();
     if(fexists("buff_size"))
         changeBuffSize();
-    if(fexists("no_center"))
-        centered = false;
+    if(fexists("config"))
+        loadCfg();
 
     //Start sf2d
     sf2d_init();
@@ -78,10 +90,7 @@ void sysInit()
     //Start sftd
     sftd_init();
     //Load font
-    if(fexists("font.ttf"))
-        font = sftd_load_font_file("font.ttf");
-    else
-        font = sftd_load_font_mem(font_ttf, font_ttf_size);
+    font = sftd_load_font_mem(font_ttf, font_ttf_size);
 
     //Start 3ds services
     amInit();
@@ -101,7 +110,8 @@ void sysInit()
         showError("Error opening SDMC archive", (unsigned)Res);
     }
 
-    CFGU_GetSystemLanguage(&sysLanguage);
+    if(useLang)
+        CFGU_GetSystemLanguage(&sysLanguage);
 
     createDir("/JKSV/Saves");
     createDir("/JKSV/ExtData");
@@ -125,6 +135,7 @@ void sysExit()
     acExit();
     cfguExit();
     httpcExit();
+    romfsExit();
 
     freeImgs();
 

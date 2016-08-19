@@ -102,17 +102,50 @@ void setUnselColor()
 enum extraOpts
 {
     setPlay,
+    centeredText,
+    autoBackAtRest,
+    useSysLang,
     bgColor,
     slColor,
     unslColor,
     back
 };
 
+std::string onOff(bool onOff)
+{
+    if(onOff)
+        return "On";
+
+    return "Off";
+}
+
+void saveCfg()
+{
+    FILE *config = fopen("config", "wb");
+
+    fputc(centered, config);
+    fputc(autoBack, config);
+    fputc(useLang, config);
+
+    fclose(config);
+}
+
+void switchBool(bool *sw)
+{
+    if(*sw)
+        *sw = false;
+    else
+        *sw = true;
+}
+
 static menu extra(136, 80, false, true);
 
 void prepExtras()
 {
     extra.addItem("Set Play Coins");
+    extra.addItem(std::string("Centered text: " + onOff(centered)).c_str());
+    extra.addItem(std::string("Auto Backup: " + onOff(autoBack)).c_str());
+    extra.addItem(std::string("Use System Language: " + onOff(useLang)).c_str());
     extra.addItem("Set Background Color");
     extra.addItem("Set Selected Item Color");
     extra.addItem("Set Unselected Item Color");
@@ -120,6 +153,18 @@ void prepExtras()
 
     extra.autoVert();
 }
+
+static const std::string helpDescs[] =
+{
+    "Sets play coins to a number between 0 - 300",
+    "Sets whether title select, nand title select, and folder select menus are centered. (Requires reboot to take effect.)",
+    "Automatically creates a backup when save data is imported. Just in case!",
+    "Uses system language when getting titles. Defaults to English if title is empty.",
+    "Sets the background color. Asks for RGB info in that order",
+    "Sets the color of selected options in menus. Asks for RGB info in that order",
+    "Sets the color of unselected menu options. Asks for RGB info in that order",
+    "This means go back."
+};
 
 void extrasMenu()
 {
@@ -135,6 +180,21 @@ void extrasMenu()
         {
             case extraOpts::setPlay:
                 setPlayCoins();
+                break;
+            case extraOpts::centeredText:
+                switchBool(&centered);
+                extra.updateItem(extraOpts::centeredText, std::string("Centered text: " + onOff(centered)).c_str());
+                saveCfg();
+                break;
+            case extraOpts::autoBackAtRest:
+                switchBool(&autoBack);
+                extra.updateItem(extraOpts::autoBackAtRest, std::string("Auto Backup: " + onOff(autoBack)).c_str());
+                saveCfg();
+                break;
+            case extraOpts::useSysLang:
+                switchBool(&useLang);
+                extra.updateItem(extraOpts::useSysLang, std::string("Use System Language: " + onOff(useLang)).c_str());
+                saveCfg();
                 break;
             case extraOpts::bgColor:
                 setBGColor();
@@ -156,11 +216,12 @@ void extrasMenu()
     killApp(down);
 
     sf2d_start_frame(GFX_TOP, GFX_LEFT);
-    drawTopBar(U"Extras");
+    drawTopBar(U"Config/Extras");
     extra.draw();
     sf2d_end_frame();
 
     sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
+        sftd_draw_text_wrap(font, 0, 0, RGBA8(255, 255, 255, 255), 12, 320, helpDescs[extra.getSelected()].c_str());
     sf2d_end_frame();
 
     sf2d_swapbuffers();

@@ -1,19 +1,19 @@
 #include <3ds.h>
 #include <sf2d.h>
 #include <sftd.h>
+#include <sfil.h>
 #include <stdio.h>
 #include <string.h>
 
 #include "global.h"
 #include "textbox.h"
-#include "img.h"
 #include "util.h"
 
 static sf2d_texture *tbox;
 
 void textboxInit()
 {
-    tbox = sf2d_create_texture_mem_RGBA8(tbox_img.pixel_data, tbox_img.width, tbox_img.height, TEXFMT_RGBA8, SF2D_PLACE_RAM);
+    tbox = sfil_load_PNG_file("romfs:/img/textBox.png", SF2D_PLACE_RAM);
 }
 
 void textboxExit()

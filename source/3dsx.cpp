@@ -12,6 +12,7 @@
 #include "global.h"
 #include "util.h"
 #include "ui.h"
+#include "extra.h"
 
 enum hblOpts
 {
@@ -20,6 +21,7 @@ enum hblOpts
     delSV,
     expExt,
     impExt,
+    extra,
     exit
 };
 
@@ -41,6 +43,7 @@ void start3dsxMode()
     hblMenu.addItem("Delete Secure Value");
     hblMenu.addItem("Export ExtData");
     hblMenu.addItem("Import ExtData");
+    hblMenu.addItem("Extras/Config");
     hblMenu.addItem("Exit");
 
     std::u32string info = data.u32Name + U" : 3DSX Mode";
@@ -91,6 +94,16 @@ void start3dsxMode()
                     if(openExtdata(&arch, data, false))
                         restoreData(data, arch, MODE_EXTDATA);
                     break;
+                case hblOpts::extra:
+                    while(1)
+                    {
+                        extrasMenu();
+
+                        if(hidKeysDown() & KEY_B)
+                            break;
+
+                    }
+                    break;
                 case hblOpts::exit:
                     kill = true;
                     break;
@@ -101,12 +114,12 @@ void start3dsxMode()
         killApp(down);
 
         sf2d_start_frame(GFX_TOP, GFX_LEFT);
-            drawTopBar(info);
-            hblMenu.draw();
+        drawTopBar(info);
+        hblMenu.draw();
         sf2d_end_frame();
 
         sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
-            data.printInfo();
+        data.printInfo();
         sf2d_end_frame();
 
         sf2d_swapbuffers();

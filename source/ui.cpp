@@ -1,13 +1,13 @@
 #include <3ds.h>
 #include <sf2d.h>
 #include <sftd.h>
+#include <sfil.h>
 #include <string>
 #include <stdio.h>
 
 #include "ui.h"
 #include "textbox.h"
 #include "button.h"
-#include "img.h"
 #include "global.h"
 
 bool confirm(const char *t)
@@ -38,9 +38,9 @@ bool confirm(const char *t)
         }
 
         sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
-            back.draw();
-            yes.draw();
-            no.draw();
+        back.draw();
+        yes.draw();
+        no.draw();
         sf2d_end_frame();
 
         sf2d_swapbuffers();
@@ -67,8 +67,8 @@ void showMessage(const char *t, const char *head)
             break;
 
         sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
-            back.draw();
-            ok.draw();
+        back.draw();
+        ok.draw();
         sf2d_end_frame();
 
         sf2d_swapbuffers();
@@ -95,8 +95,8 @@ void showError(const char *t, unsigned error)
             break;
 
         sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
-            back.draw();
-            ok.draw();
+        back.draw();
+        ok.draw();
         sf2d_end_frame();
 
         sf2d_swapbuffers();
@@ -107,7 +107,7 @@ static sf2d_texture *progFull;
 
 void progressBarInit()
 {
-    progFull = sf2d_create_texture_mem_RGBA8(pbar_full.pixel_data, pbar_full.width, pbar_full.height, TEXFMT_RGBA8, SF2D_PLACE_RAM);
+    progFull = sfil_load_PNG_file("romfs:/img/progBar.png", SF2D_PLACE_RAM);
 }
 
 void progressBarExit()

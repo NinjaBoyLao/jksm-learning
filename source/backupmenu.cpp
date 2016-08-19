@@ -30,7 +30,7 @@ void prepBackMenu()
 
 void backupMenu()
 {
-    if(curTitle==NULL)
+    if(curTitle == NULL)
     {
         showMessage("OH SHIT! THIS SHOULDN'T HAPPEN!", "curTitle is NULL!!!");
         state = prevState;
@@ -38,7 +38,7 @@ void backupMenu()
     }
 
     std::u32string info = curTitle->u32Name;
-    if(curTitle->media==MEDIATYPE_GAME_CARD)
+    if(curTitle->media == MEDIATYPE_GAME_CARD)
         info += U" : Cart";
     else
         info += U" : SD/CIA";
@@ -69,8 +69,8 @@ void backupMenu()
     killApp(down);
 
     sf2d_start_frame(GFX_TOP, GFX_LEFT);
-        drawTopBar(info);
-        backMenu.draw();
+    drawTopBar(info);
+    backMenu.draw();
     sf2d_end_frame();
 
     sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);

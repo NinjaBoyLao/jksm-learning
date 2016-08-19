@@ -239,13 +239,13 @@ bool touchPressed(touchPosition p)
 
 bool modeExtdata(int mode)
 {
-    return (mode==MODE_EXTDATA || mode==MODE_BOSS || mode==MODE_SHARED);
+    return (mode == MODE_EXTDATA || mode == MODE_BOSS || mode == MODE_SHARED);
 }
 
 bool fexists(const char *path)
 {
     FILE *test = fopen(path, "r");
-    if(test==NULL)
+    if(test == NULL)
         return false;
 
     fclose(test);
@@ -255,10 +255,10 @@ bool fexists(const char *path)
 
 void fsStart()
 {
-   Handle fs;
-   srvGetServiceHandleDirect(&fs, "fs:USER");
-   FSUSER_Initialize(fs);
-   fsUseSession(fs);
+    Handle fs;
+    srvGetServiceHandleDirect(&fs, "fs:USER");
+    FSUSER_Initialize(fs);
+    fsUseSession(fs);
 }
 
 void fsEnd()

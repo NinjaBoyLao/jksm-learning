@@ -4,6 +4,7 @@
 #include <sftd.h>
 
 #include "restore.h"
+#include "backup.h"
 #include "archive.h"
 #include "slot.h"
 #include "global.h"
@@ -28,14 +29,14 @@ void copyFiletoArch(FS_Archive arch, const std::u16string from, const std::u16st
     {
         in.read(buff, &read, buff_size);
         out.write(buff, &written, read);
-        if(written!=read)
+        if(written != read)
         {
             showMessage("Something went wrong writing to the archive file!", "UH OH!");
             break;
         }
 
         sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
-            fileProg.draw(in.getOffset());
+        fileProg.draw(in.getOffset());
         sf2d_end_frame();
 
         sf2d_swapbuffers();
@@ -86,6 +87,9 @@ bool restoreData(const titleData dat, FS_Archive arch, int mode)
     if(!confirm(ask.c_str()))
         return false;
 
+    if(autoBack)
+        backupData(dat, arch, mode, true);
+
     sdPath = getPath(mode) + dat.nameSafe + (char16_t)'/' + keepName + (char16_t)'/';
 
     std::u16string archPath = (char16_t *)"/";
@@ -126,6 +130,9 @@ bool restoreDataSDPath(const titleData dat, FS_Archive arch, int mode)
 
     if(!modeExtdata(mode))
         FSUSER_DeleteDirectoryRecursively(arch, fsMakePath(PATH_ASCII, "/"));
+
+    if(autoBack)
+        backupData(dat, arch, mode, true);
 
     copyDirToArch(arch, sdPath, archPath, mode);
 

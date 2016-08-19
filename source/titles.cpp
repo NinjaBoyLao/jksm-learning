@@ -51,7 +51,7 @@ void sdTitlesInit()
         FILE *read = dbOpen("titles");
 
         //Check to make sure cache is updated since I changed it.
-        if(dbGetRev(read)==1)
+        if(dbGetRev(read) == 1)
         {
             u32 count = dbGetCount(read);
             sdTitle.reserve(count);
@@ -97,7 +97,7 @@ void sdTitlesInit()
             sf2d_end_frame();
 
             sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
-                load.draw((float)i);
+            load.draw((float)i);
             sf2d_end_frame();
 
             sf2d_swapbuffers();
@@ -120,7 +120,7 @@ bool nandFilter(u64 id)
 {
     u32 low = (u32)id;
     //camera applet
-    if(low==0x00009002 || low==0x00008402 || low==0x00009902 || low==0x0000AA02 || low==0x0000B202)
+    if(low == 0x00009002 || low == 0x00008402 || low == 0x00009902 || low == 0x0000AA02 || low == 0x0000B202)
         return true;
 
     return false;
@@ -131,7 +131,7 @@ void sysSaveRedirect(titleData *dat)
     //this is for browser and ar games
     if(dat->low > 0x20000000)
         dat->unique = (0x0000FFFF & dat->unique);
-    if(dat->low==0x2002CF00)
+    if(dat->low == 0x2002CF00)
         dat->unique = 0x0000008F;
 }
 
@@ -144,7 +144,7 @@ void nandTitlesInit()
     {
         FILE *read = dbOpen("nand");
 
-        if(dbGetRev(read)==1)
+        if(dbGetRev(read) == 1)
         {
             u32 count = dbGetCount(read);
             nandTitle.reserve(count);
@@ -176,7 +176,7 @@ void nandTitlesInit()
         progressBar load((float)count, "NAND Titles...", "Loading");
         for(unsigned i = 0; i < count; i++)
         {
-            if(!(nandFilter(ids[i]) && ids[i]!=0) || devMode)
+            if(!(nandFilter(ids[i]) && ids[i] != 0) || devMode)
             {
                 titleData newData;
                 if( (newData.init(ids[i], MEDIATYPE_NAND) && !newData.name.empty()))
@@ -203,7 +203,7 @@ void nandTitlesInit()
             sf2d_end_frame();
 
             sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
-                load.draw((float)i);
+            load.draw((float)i);
             sf2d_end_frame();
 
             sf2d_swapbuffers();

@@ -25,7 +25,7 @@ bool cartCheck()
     //Make sure it's a 3ds game
     FS_CardType type;
     FSUSER_GetCardType(&type);
-    if(type!=CARD_CTR)
+    if(type != CARD_CTR)
     {
         showMessage("No DS support.", "Sorry...");
         return false;
@@ -47,7 +47,7 @@ void cartManager()
 
     //use titledata to take care of everything
     static titleData cartData;
-    if(cartData.id!=cartID || !cartData.initd)
+    if(cartData.id != cartID || !cartData.initd)
     {
         cartData.init(cartID, MEDIATYPE_GAME_CARD);
     }

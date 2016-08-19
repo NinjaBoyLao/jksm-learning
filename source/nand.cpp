@@ -49,12 +49,12 @@ void nandStartSelect()
     killApp(down);
 
     sf2d_start_frame(GFX_TOP, GFX_LEFT);
-        nandMenu.draw();
-        drawTopBar(U"Select System Title");
+    nandMenu.draw();
+    drawTopBar(U"Select System Title");
     sf2d_end_frame();
 
     sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
-        nandTitle[nandMenu.getSelected()].printInfo();
+    nandTitle[nandMenu.getSelected()].printInfo();
     sf2d_end_frame();
 
     sf2d_swapbuffers();
@@ -152,8 +152,8 @@ void nandBackup()
     killApp(down);
 
     sf2d_start_frame(GFX_TOP, GFX_LEFT);
-        drawTopBar(info);
-        nBackupMenu.draw();
+    drawTopBar(info);
+    nBackupMenu.draw();
     sf2d_end_frame();
 
     sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);

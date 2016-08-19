@@ -94,8 +94,8 @@ void sharedBackupMenu()
     killApp(down);
 
     sf2d_start_frame(GFX_TOP, GFX_LEFT);
-        drawTopBar(info);
-        sharedBackMenu.draw();
+    drawTopBar(info);
+    sharedBackMenu.draw();
     sf2d_end_frame();
 
     sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);

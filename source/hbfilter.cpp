@@ -14,7 +14,7 @@ bool downloadFilter()
 {
     u32 wifi;
     ACU_GetWifiStatus(&wifi);
-    if(wifi==0)
+    if(wifi == 0)
         return false;
 
     httpcContext filter;
@@ -40,8 +40,8 @@ bool downloadFilter()
     }
 
     u32 code;
-    res = httpcGetResponseStatusCode(&filter, &code, 0);
-    if(res || code!=200)
+    res = httpcGetResponseStatusCode(&filter, &code);
+    if(res || code != 200)
     {
         showMessage("Not found?", "wut");
         return false;
@@ -106,7 +106,7 @@ bool hbFilter(u64 id)
     //Thank you ksanislo for titledb
     for(unsigned i = 0; i < filterID.size(); i++)
     {
-        if(low==filterID[i])
+        if(low == filterID[i])
             return true;
     }
     return false;

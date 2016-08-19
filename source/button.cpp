@@ -5,7 +5,6 @@
 
 #include "global.h"
 #include "button.h"
-#include "img.h"
 #include "util.h"
 
 button::button(const char * sText, int sX, int sY, int sWidth, int sHeight)
@@ -30,13 +29,13 @@ void button::draw()
     else
         sf2d_draw_rectangle(X, Y, width, height, RGBA8(244, 244, 244, 255));
 
-    sftd_draw_text(font, textX, textY, RGBA8(0,0,0,255), 12, text.c_str());
+    sftd_draw_text(font, textX, textY, RGBA8(0, 0, 0, 255), 12, text.c_str());
 }
 
 //This checks whether the stylus is inside the button
 bool button::isOver(touchPosition p)
 {
-   return (p.px > X && p.px < X + width) && (p.py > Y && p.py < Y + height);
+    return (p.px > X && p.px < X + width) && (p.py > Y && p.py < Y + height);
 }
 
 //Checks if the stylus was removed.

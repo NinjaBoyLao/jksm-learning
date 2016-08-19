@@ -19,7 +19,7 @@ void reinitDirMenu(menu *m, dirList *dir, std::u16string path, bool newFolder)
 {
     m->reset();
     dir->reassign(path);
-    
+
     for(u32 i = 0; i < dir->count(); i++)
         m->addItem(dir->retItem(i));
     if(newFolder)
@@ -75,9 +75,9 @@ std::u16string getFolder(const titleData dat, int mode, bool newFolder)
             {
                 std::u16string oldPath = path + dir.retItem(folderMenu.getSelected());
                 std::u16string newPath = path + newName;
-                
+
                 FSUSER_RenameDirectory(sdArch, fsMakePath(PATH_UTF16, oldPath.data()), sdArch, fsMakePath(PATH_UTF16, newPath.data()));
-                
+
                 reinitDirMenu(&folderMenu, &dir, path, newFolder);
             }
         }
@@ -87,9 +87,9 @@ std::u16string getFolder(const titleData dat, int mode, bool newFolder)
             if(confirm(confString.c_str()))
             {
                 std::u16string delPath = path + dir.retItem(folderMenu.getSelected());
-                
+
                 FSUSER_DeleteDirectoryRecursively(sdArch, fsMakePath(PATH_UTF16, delPath.data()));
-                
+
                 reinitDirMenu(&folderMenu, &dir, path, newFolder);
                 if(dir.count() == 0 && !newFolder)
                     break;
@@ -99,8 +99,8 @@ std::u16string getFolder(const titleData dat, int mode, bool newFolder)
             break;
 
         sf2d_start_frame(GFX_TOP, GFX_LEFT);
-            drawTopBar(U"Select a folder. X = Rename, Y = Delete");
-            folderMenu.draw();
+        drawTopBar(U"Select a folder. X = Rename, Y = Delete");
+        folderMenu.draw();
         sf2d_end_frame();
 
         sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
