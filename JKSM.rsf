@@ -51,7 +51,7 @@ AccessControlInfo:
    #- ExportImportIvs
    #- DirectSdmcWrite
    #- SwitchCleanup
-   #- SaveDataMove
+   - SaveDataMove
    #- Shop
    #- Shell
    #- CategoryHomeMenu

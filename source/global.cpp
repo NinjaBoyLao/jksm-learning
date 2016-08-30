@@ -20,8 +20,10 @@
 #include "hbfilter.h"
 #include "extra.h"
 #include "shared.h"
+#include "dev.h"
+#include "ui.h"
 
-unsigned buff_size = 0x10000;
+unsigned buff_size = 0x40000;
 
 sftd_font * font;
 
@@ -105,6 +107,13 @@ void handleState()
         case states::STATE_SHAREDBACKUP:
             sharedBackupMenu();
             break;
+        case states::STATE_DEVMENU:
+            showDevMenu();
+            break;
+        default:
+            showMessage("This shouldn't happen.", "Umm...");
+            state = states::STATE_MAINMENU;
+            break;
     }
 }
 
@@ -123,7 +132,8 @@ enum mMenuOpts
     ref,
     filter,
     extra,
-    exit
+    exit,
+    dev
 };
 
 static menu mMenu(136, 80, false, true);
@@ -138,6 +148,9 @@ void prepMain()
     mMenu.addItem("Download Filter");
     mMenu.addItem("Config/Extras");
     mMenu.addItem("Exit");
+
+    if(devMode)
+        mMenu.addItem("Dev");
 
     mMenu.autoVert();
 }
@@ -180,6 +193,9 @@ void mainMenu()
             case mMenuOpts::exit:
                 kill = true;
                 break;
+            case mMenuOpts::dev:
+                state = STATE_DEVMENU;
+                break;
         }
     }
     else if(down & KEY_B)
@@ -188,7 +204,7 @@ void mainMenu()
     killApp(down);
 
     sf2d_start_frame(GFX_TOP, GFX_LEFT);
-    drawTopBar(U"JKSM - 8/19/2016");
+    drawTopBar(U"JKSM - 8/25/2016");
     mMenu.draw();
     sf2d_end_frame();
 

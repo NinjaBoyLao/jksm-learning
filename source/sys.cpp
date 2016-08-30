@@ -96,7 +96,6 @@ void sysInit()
     amInit();
     aptInit();
     srvInit();
-    hidInit();
     acInit();
     cfguInit();
     httpcInit(0);

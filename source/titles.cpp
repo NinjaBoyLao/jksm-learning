@@ -132,7 +132,10 @@ void sysSaveRedirect(titleData *dat)
     if(dat->low > 0x20000000)
         dat->unique = (0x0000FFFF & dat->unique);
     if(dat->low == 0x2002CF00)
+    {
         dat->unique = 0x0000008F;
+        dat->extdata = 0x0000008F;
+    }
 }
 
 extern void prepNandSelect();
@@ -183,19 +186,6 @@ void nandTitlesInit()
                 {
                     sysSaveRedirect(&newData);
                     nandTitle.push_back(newData);
-                }
-                else
-                {
-                    switch(newData.id)
-                    {
-                        case 0x0004003000008F02:
-                            newData.name = tou16("Home Menu");
-                            newData.nameSafe = newData.name;
-                            newData.u32Name = tou32(newData.name);
-                            nandTitle.push_back(newData);
-                            break;
-
-                    }
                 }
             }
 

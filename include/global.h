@@ -31,7 +31,8 @@ enum states
     STATE_NANDBACKUP,
     STATE_EXTRAS,
     STATE_SHARED,
-    STATE_SHAREDBACKUP
+    STATE_SHAREDBACKUP,
+    STATE_DEVMENU
 };
 
 void handleState();

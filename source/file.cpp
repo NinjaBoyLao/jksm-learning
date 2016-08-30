@@ -10,8 +10,8 @@
 fsFile::fsFile(FS_Archive _arch, std::u16string _path, u32 openFlags)
 {
     arch = _arch;
-    Result res = FSUSER_OpenFile(&fileHandle, arch, fsMakePath(PATH_UTF16, _path.data()), openFlags, 0);
-    if(res)
+    error = FSUSER_OpenFile(&fileHandle, arch, fsMakePath(PATH_UTF16, _path.data()), openFlags, 0);
+    if(error)
     {
         opened = false;
     }
@@ -25,17 +25,17 @@ fsFile::fsFile(FS_Archive _arch, std::u16string _path, u32 openFlags)
 fsFile::fsFile(FS_Archive _arch, std::u16string _path, u32 openFlags, u64 createSize)
 {
     arch = _arch;
-    Result res = FSUSER_OpenFile(&fileHandle, arch, fsMakePath(PATH_UTF16, _path.data()), openFlags, 0);
-    if(res)
+    error = FSUSER_OpenFile(&fileHandle, arch, fsMakePath(PATH_UTF16, _path.data()), openFlags, 0);
+    if(error)
     {
-        res = FSUSER_CreateFile(arch, fsMakePath(PATH_UTF16, _path.data()), 0, createSize);
-        if(res)
+        error = FSUSER_CreateFile(arch, fsMakePath(PATH_UTF16, _path.data()), 0, createSize);
+        if(error)
         {
             opened = false;
             return;
         }
-        res = FSUSER_OpenFile(&fileHandle, arch, fsMakePath(PATH_UTF16, _path.data()), openFlags, 0);
-        if(res)
+        error = FSUSER_OpenFile(&fileHandle, arch, fsMakePath(PATH_UTF16, _path.data()), openFlags, 0);
+        if(error)
             opened = false;
         else
             opened = true;
@@ -45,8 +45,8 @@ fsFile::fsFile(FS_Archive _arch, std::u16string _path, u32 openFlags, u64 create
 fsFile::fsFile(FS_Archive _arch, const char *_path, u32 openFlags)
 {
     arch = _arch;
-    Result res = FSUSER_OpenFile(&fileHandle, arch, fsMakePath(PATH_ASCII, _path), openFlags, 0);
-    if(res)
+    error = FSUSER_OpenFile(&fileHandle, arch, fsMakePath(PATH_ASCII, _path), openFlags, 0);
+    if(error)
         opened = false;
     else
     {
@@ -59,17 +59,17 @@ fsFile::fsFile(FS_Archive _arch, const char *_path, u32 openFlags)
 fsFile::fsFile(FS_Archive _arch, const char *_path, u32 openFlags, u64 createSize)
 {
     arch = _arch;
-    Result res = FSUSER_OpenFile(&fileHandle, arch, fsMakePath(PATH_ASCII, _path), openFlags, 0);
-    if(res)
+    error = FSUSER_OpenFile(&fileHandle, arch, fsMakePath(PATH_ASCII, _path), openFlags, 0);
+    if(error)
     {
-        res = FSUSER_CreateFile(arch, fsMakePath(PATH_ASCII, _path), 0, createSize);
-        if(res)
+        error = FSUSER_CreateFile(arch, fsMakePath(PATH_ASCII, _path), 0, createSize);
+        if(error)
         {
             opened = false;
             return;
         }
-        res = FSUSER_OpenFile(&fileHandle, arch, fsMakePath(PATH_ASCII, _path), openFlags, 0);
-        if(res)
+        error = FSUSER_OpenFile(&fileHandle, arch, fsMakePath(PATH_ASCII, _path), openFlags, 0);
+        if(error)
             opened = false;
         else
             opened = true;
@@ -78,11 +78,20 @@ fsFile::fsFile(FS_Archive _arch, const char *_path, u32 openFlags, u64 createSiz
 
 fsFile::fsFile(FS_ArchiveID _arch, FS_Path archPath, FS_Path filePath, u32 openFlags)
 {
-    Result res = FSUSER_OpenFileDirectly(&fileHandle, _arch, archPath, filePath, openFlags, 0);
-    if(res == 0)
+    error = FSUSER_OpenFileDirectly(&fileHandle, _arch, archPath, filePath, openFlags, 0);
+    if(error == 0)
         opened = true;
     else
         opened = false;
+}
+
+fsFile::fsFile(FS_Archive _arch, FS_Path _path, u32 openFlags)
+{
+    error = FSUSER_OpenFile(&fileHandle, _arch, _path, openFlags, 0);
+    if(error)
+        opened = false;
+    else
+        opened = true;
 }
 
 bool fsFile::isOpened()
@@ -97,29 +106,29 @@ bool fsFile::eof()
 
 Result fsFile::read(void *buff, u32 *readOut, u32 max)
 {
-    Result res = FSFILE_Read(fileHandle, readOut, offset, buff, max);
-    if(res)
+    error = FSFILE_Read(fileHandle, readOut, offset, buff, max);
+    if(error)
     {
         if(*readOut > max)
             *readOut = max;
 
-        writeErrorToBuff((u8 *)buff, *readOut, (unsigned)res);
+        writeErrorToBuff((u8 *)buff, *readOut, error);
 
     }
 
     offset += *readOut;
 
-    return res;
+    return error;
 }
 
 Result fsFile::write(void *dat, u32 *written, u32 size)
 {
     *written = 0;
-    Result res = FSFILE_Write(fileHandle, written, offset, dat, size, FS_WRITE_FLUSH);
+    error = FSFILE_Write(fileHandle, written, offset, dat, size, FS_WRITE_FLUSH);
 
     offset += *written;
 
-    return res;
+    return error;
 }
 
 void fsFile::seek(int pos, u8 seekFrom)
@@ -154,9 +163,9 @@ void fsFile::putByte(u8 put)
 
 bool fsFile::close()
 {
-    Result res = FSFILE_Close(fileHandle);
+    error = FSFILE_Close(fileHandle);
 
-    return res == 0;
+    return error == 0;
 }
 
 u64 fsFile::size()
@@ -167,4 +176,9 @@ u64 fsFile::size()
 u64 fsFile::getOffset()
 {
     return offset;
+}
+
+unsigned int fsFile::getError()
+{
+    return error;
 }

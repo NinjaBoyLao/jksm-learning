@@ -19,6 +19,8 @@ class fsFile
         fsFile(FS_Archive _arch, const char *_path, u32 openFlags, u64 createSize);
         //Directly
         fsFile(FS_ArchiveID _arch, FS_Path archPath, FS_Path filePath, u32 openFlags);
+        //Bin
+        fsFile(FS_Archive _arch, FS_Path _path, u32 openFlags);
 
         //returns if file is opened
         bool isOpened();
@@ -42,11 +44,14 @@ class fsFile
         u64 size();
         u64 getOffset();
 
+        unsigned int getError();
+
     private:
         Handle fileHandle;
         bool opened = false;
         FS_Archive arch;
-        u64 fileSize, offset = 0;
+        u64 fileSize = 0, offset = 0;
+        unsigned int error;
 };
 
 #endif // FILE_H

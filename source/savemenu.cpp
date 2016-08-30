@@ -1,4 +1,5 @@
 #include <3ds.h>
+#include <stdio.h>
 #include <sf2d.h>
 #include <sftd.h>
 #include <string>
@@ -13,6 +14,8 @@
 #include "ui.h"
 #include "util.h"
 
+#include "file.h"
+
 enum saveOpts
 {
     expSav,
@@ -20,7 +23,8 @@ enum saveOpts
     browseSav,
     delSV,
     delSav,
-    back
+    back,
+    fun
 };
 
 static menu saveMenu(128, 80, false, true);

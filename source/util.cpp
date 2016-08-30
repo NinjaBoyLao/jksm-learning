@@ -320,12 +320,17 @@ std::u16string safeString(const std::u16string s)
         else
             ret += s[i];
     }
+
+    int lastChar = ret.length() - 1;
+    if(ret.c_str()[lastChar] == L' ')
+        ret.erase(lastChar, 1);
+
     return ret;
 }
 
 extern void prepMain(), prepBackMenu(), prepSaveMenu();
 extern void prepExtMenu(), prepNandBackup(), prepSharedMenu();
-extern void prepSharedBackMenu(), prepExtras();
+extern void prepSharedBackMenu(), prepExtras(), prepDevMenu();
 
 void prepareMenus()
 {
@@ -337,4 +342,6 @@ void prepareMenus()
     prepSharedMenu();
     prepSharedBackMenu();
     prepExtras();
+    if(devMode)
+        prepDevMenu();
 }
