@@ -11,6 +11,8 @@
 #include "smdh.h"
 #include "archive.h"
 
+static Handle fsHandle;
+
 std::u32string tou32(const std::u16string t)
 {
     char32_t tmp[256];
@@ -255,10 +257,9 @@ bool fexists(const char *path)
 
 void fsStart()
 {
-    Handle fs;
-    srvGetServiceHandleDirect(&fs, "fs:USER");
-    FSUSER_Initialize(fs);
-    fsUseSession(fs);
+    srvGetServiceHandleDirect(&fsHandle, "fs:USER");
+    FSUSER_Initialize(fsHandle);
+    fsUseSession(fsHandle);
 }
 
 void fsEnd()
@@ -269,6 +270,23 @@ void fsEnd()
 void fsCommitData(FS_Archive arch)
 {
     FSUSER_ControlArchive(arch, ARCHIVE_ACTION_COMMIT_SAVE_DATA, NULL, 0, NULL, 0);
+}
+
+Result FS_GetMediaType(FS_MediaType *m)
+{
+    Result res = 0;
+
+    u32 *cmdBuf = getThreadCommandBuffer();
+
+    cmdBuf[0] = IPC_MakeHeader(0x868, 0, 0);
+    cmdBuf[1] = 0;
+
+    if(R_FAILED(res = svcSendSyncRequest(fsHandle)))
+        return res;
+
+    *m = (FS_MediaType)cmdBuf[2];
+
+    return (Result)cmdBuf[1];
 }
 
 //I seriously can't remember why I put space in there. I don't like it anymore.

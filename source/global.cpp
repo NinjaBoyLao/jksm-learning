@@ -204,7 +204,7 @@ void mainMenu()
     killApp(down);
 
     sf2d_start_frame(GFX_TOP, GFX_LEFT);
-    drawTopBar(U"JKSM - 8/25/2016");
+    drawTopBar(std::u32string(U"JKSM - " + BUILD_DATE));
     mMenu.draw();
     sf2d_end_frame();
 

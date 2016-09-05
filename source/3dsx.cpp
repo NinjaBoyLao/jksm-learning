@@ -30,10 +30,14 @@ void start3dsxMode()
     u64 id;
     APT_GetProgramID(&id);
 
+    fsStart();
+    FS_MediaType getMedia;
+    FS_GetMediaType(&getMedia);
+    fsEnd();
+
     //This doesn't work if you start the FS session.
     titleData data;
-    if(!data.init(id, MEDIATYPE_GAME_CARD))
-        data.init(id, MEDIATYPE_SD);
+    data.init(id, getMedia);
 
     renameDir(data);
 
@@ -46,7 +50,7 @@ void start3dsxMode()
     hblMenu.addItem("Extras/Config");
     hblMenu.addItem("Exit");
 
-    std::u32string info = data.u32Name + U" : 3DSX Mode";
+    std::u32string info = data.u32Name + U" : 3DSX Mode - " + BUILD_DATE;
 
     fsStart();
 

@@ -22,6 +22,9 @@ u32 extdataRedirect(u32 low)
     //FE Conquest + SE EURO
     else if(low == 0x00179700 || low == 0x0017A800)
         return 0x00001795;
+    //FE If/JPN
+    else if(low == 0x0012DD00 || low == 0x0012DE00)
+        return 0x000012DC;
 
     return (low >> 8);
 }

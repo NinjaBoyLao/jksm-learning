@@ -54,6 +54,7 @@ bool fexists(const char *path);
 void fsStart();
 void fsEnd();
 void fsCommitData(FS_Archive arch);
+Result FS_GetMediaType(FS_MediaType *m);
 
 //Sets up menus
 void prepareMenus();

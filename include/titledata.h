@@ -2,6 +2,7 @@
 #define TITLEDATA_H
 
 #include <3ds.h>
+#include <sf2d.h>
 #include <string>
 #include "smdh.h"
 
