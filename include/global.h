@@ -15,7 +15,7 @@
 #define MODE_BOSS 3
 #define MODE_SHARED 4
 
-#define BUILD_DATE std::u32string(U"9-5-2016")
+#define BUILD_DATE std::u32string(U"11-21-2016")
 
 extern int state, prevState;
 extern titleData *curTitle;

@@ -1,8 +1,24 @@
 #include <3ds.h>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 #include "dir.h"
+
+struct
+{
+    bool inline operator()(const FS_DirectoryEntry& a, const FS_DirectoryEntry& b)
+    {
+        for(uint32_t i = 0; i < 0x106; i++)
+        {
+            int charA = tolower(a.name[i]), charB = tolower(b.name[i]);
+            if(charA != charB)
+                return charA < charB;
+        }
+
+        return false;
+    }
+} sortDirs;
 
 dirList::dirList(FS_Archive arch, const std::u16string p)
 {
@@ -26,6 +42,8 @@ dirList::dirList(FS_Archive arch, const std::u16string p)
     while(read > 0);
 
     FSDIR_Close(d);
+
+    std::sort(entry.begin(), entry.end() - 1, sortDirs);
 }
 
 //clears vector used
@@ -51,6 +69,8 @@ void dirList::reassign(const std::u16string p)
     while(read > 0);
 
     FSDIR_Close(d);
+
+    std::sort(entry.begin(), entry.end() - 1, sortDirs);
 }
 
 //Always has an extra, so we subtract 1
