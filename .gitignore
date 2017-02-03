@@ -1,6 +1,7 @@
 build/
 test/
 release/
+.codelite/
 *.o
 *.elf
 *.wav
@@ -10,3 +11,4 @@ release/
 *.exe
 *.log
 *.7z
+*.project

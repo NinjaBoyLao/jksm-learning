@@ -17,7 +17,6 @@ class button
 {
     public:
         button(const char *sText, int sX, int sY, int sWidth, int sHeight);
-        ~button();
         void draw();
         bool isOver(touchPosition p);
         bool released(touchPosition p);
@@ -25,7 +24,8 @@ class button
     private:
         bool Pressed;
         int X, Y, width, height;
-        textbox *Box;
+        int textX, textY;
+        std::string text;
         touchPosition Prev;
 };
 

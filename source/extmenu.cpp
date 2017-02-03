@@ -22,8 +22,6 @@ enum extOpts
     back
 };
 
-const char * extDataConfirm = "Would you like to try to create Extra Data for this title?";
-
 static menu extMenu(128, 80, false, true);
 
 void prepExtMenu()
@@ -69,7 +67,7 @@ void showExtMenu()
                     restoreData(*curTitle, extData, MODE_EXTDATA);
                 else
                 {
-                    if(confirm(extDataConfirm))
+                    if(confirm("Would you like to try to create Extra Data for this title?"))
                         createExtData(*curTitle);
                 }
                 break;
@@ -78,7 +76,7 @@ void showExtMenu()
                     restoreDataSDPath(*curTitle, extData, MODE_EXTDATA);
                 else
                 {
-                    if(confirm(extDataConfirm))
+                    if(confirm("Would you like to try to create Extra Data for this title?"))
                         createExtData(*curTitle);
                 }
                 break;

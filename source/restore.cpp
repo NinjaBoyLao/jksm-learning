@@ -4,6 +4,7 @@
 #include <sftd.h>
 
 #include "restore.h"
+#include "backup.h"
 #include "archive.h"
 #include "slot.h"
 #include "global.h"
@@ -11,62 +12,41 @@
 #include "util.h"
 #include "ui.h"
 #include "sdpath.h"
+#include "file.h"
+#include "titles.h"
+#include "archive.h"
 
 void copyFiletoArch(FS_Archive arch, const std::u16string from, const std::u16string to, int mode)
 {
-    Handle sdFile, archFile;
-    FSUSER_OpenFile(&sdFile, sdArch, fsMakePath(PATH_UTF16, from.data()), FS_OPEN_READ, 0);
-    //OpenFile will fail FS_OPEN_CREATE in ExtData
-    if(!modeExtdata(mode))
-        FSUSER_OpenFile(&archFile, arch, fsMakePath(PATH_UTF16, to.data()), FS_OPEN_CREATE | FS_OPEN_WRITE, 0);
-    else
-    {
-        Result chk = FSUSER_OpenFile(&archFile, arch, fsMakePath(PATH_UTF16, to.data()), FS_OPEN_WRITE, 0);
-        if(chk)
-        {
-            //try to create it
-            u64 size = 0;
-            FSFILE_GetSize(sdFile, &size);
-            chk = FSUSER_CreateFile(arch, fsMakePath(PATH_UTF16, to.data()), 0, size);
-            if(chk)
-            {
-                showMessage("Error creating extData file!");
-            }
-            else
-            {
-                FSUSER_OpenFile(&archFile, arch, fsMakePath(PATH_UTF16, to.data()), FS_OPEN_WRITE, 0);
-            }
-        }
-    }
-
-    u32 read = 0;
-    u64 offset = 0;
-
-    u64 size;
-    FSFILE_GetSize(sdFile, &size);
+    fsFile in(sdArch, from, FS_OPEN_READ);
+    fsFile out(arch, to, FS_OPEN_WRITE, in.size());
 
     u8 *buff = new u8[buff_size];
     std::string copyString = "Copying " + toString(from) + "...";
-    evenString(&copyString);
-    progressBar fileProg((float)size, copyString.c_str());
+    progressBar fileProg((float)in.size(), copyString.c_str(), "Copying File");
+    u32 read, written;
     do
     {
-        FSFILE_Read(sdFile, &read, offset, buff, buff_size);
-        FSFILE_Write(archFile, NULL, offset, buff, read, FS_WRITE_FLUSH);
-        offset += read;
+        in.read(buff, &read, buff_size);
+        out.write(buff, &written, read);
+        if(written != read)
+        {
+            showMessage("Something went wrong writing to the archive file!", "UH OH!");
+            break;
+        }
 
-        //I only do this so people don't think it froze on larger files.
         sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
-            fileProg.draw(offset);
+        fileProg.draw(in.getOffset());
         sf2d_end_frame();
 
         sf2d_swapbuffers();
-    }while(offset < size);
+    }
+    while(!in.eof());
 
     delete[] buff;
 
-    FSFILE_Close(sdFile);
-    FSFILE_Close(archFile);
+    in.close();
+    out.close();
 }
 
 void copyDirToArch(FS_Archive arch, const std::u16string from, const std::u16string to, int mode)
@@ -76,12 +56,9 @@ void copyDirToArch(FS_Archive arch, const std::u16string from, const std::u16str
     {
         if(list.isDir(i))
         {
-            std::u16string newFrom = from;
-            newFrom += list.retItem(i);
-            newFrom += L'/';
+            std::u16string newFrom = from + list.retItem(i) + (char16_t)'/';
 
-            std::u16string newTo = to;
-            newTo += list.retItem(i);
+            std::u16string newTo = to + list.retItem(i);
             FSUSER_CreateDirectory(arch, fsMakePath(PATH_UTF16, newTo.data()), 0);
             newTo += L'/';
 
@@ -89,11 +66,9 @@ void copyDirToArch(FS_Archive arch, const std::u16string from, const std::u16str
         }
         else
         {
-            std::u16string sdPath = from;
-            sdPath += list.retItem(i);
+            std::u16string sdPath = from + list.retItem(i);
 
-            std::u16string archPath = to;
-            archPath += list.retItem(i);
+            std::u16string archPath = to + list.retItem(i);
 
             copyFiletoArch(arch, sdPath, archPath, mode);
         }
@@ -104,20 +79,20 @@ bool restoreData(const titleData dat, FS_Archive arch, int mode)
 {
     std::u16string sdPath;
 
-    std::string keepName = GetSlot(false, dat, mode);
-    if(keepName=="")
+    std::u16string keepName = getFolder(dat, mode, false);
+    if(keepName.empty())
         return false;
 
-    std::string ask = "Really restore " + keepName + "?";
-    evenString(&ask);
-
+    std::string ask = "Are you sure you want to import " + toString(keepName) + "?";
     if(!confirm(ask.c_str()))
         return false;
 
-    sdPath = getPath(mode) + dat.nameSafe + (char16_t)'/' + tou16(keepName.c_str()) + (char16_t)'/';
+    if(autoBack)
+        backupData(dat, arch, mode, true);
 
-    std::u16string archPath;
-    archPath += L'/';
+    sdPath = getPath(mode) + dat.nameSafe + (char16_t)'/' + keepName + (char16_t)'/';
+
+    std::u16string archPath = (char16_t *)"/";
 
     if(!modeExtdata(mode))
         FSUSER_DeleteDirectoryRecursively(arch, fsMakePath(PATH_ASCII, "/"));
@@ -128,11 +103,7 @@ bool restoreData(const titleData dat, FS_Archive arch, int mode)
     //If we're not restoring some kind of extdata, commit save data
     if(!modeExtdata(mode))
     {
-        Result res = FSUSER_ControlArchive(arch, ARCHIVE_ACTION_COMMIT_SAVE_DATA, NULL, 0, NULL, 0);
-        if(res)
-        {
-            showMessage("Error committing save data!");
-        }
+        fsCommitData(arch);
         //If we're running under something from the hbl, end the session, delete the SV and start it again.
         if(hbl)
             fsEnd();
@@ -144,7 +115,7 @@ bool restoreData(const titleData dat, FS_Archive arch, int mode)
     }
 
 
-    showMessage("Complete!");
+    showMessage("Finished", "Success!");
 
     return true;
 }
@@ -160,12 +131,42 @@ bool restoreDataSDPath(const titleData dat, FS_Archive arch, int mode)
     if(!modeExtdata(mode))
         FSUSER_DeleteDirectoryRecursively(arch, fsMakePath(PATH_ASCII, "/"));
 
+    if(autoBack)
+        backupData(dat, arch, mode, true);
+
     copyDirToArch(arch, sdPath, archPath, mode);
 
     if(!modeExtdata(mode))
-        FSUSER_ControlArchive(arch, ARCHIVE_ACTION_COMMIT_SAVE_DATA, NULL, 0, NULL, 0);
+    {
+        fsCommitData(arch);
 
-    showMessage("Complete!");
+        if(hbl)
+            fsEnd();
+
+        deleteSV(dat);
+
+        if(hbl)
+            fsStart();
+    }
+
+    showMessage("Finished!", "Success!");
 
     return true;
+}
+
+void autoRestore(menu m)
+{
+    //This still needs user input.
+    for(unsigned i = 0; i < m.getSize(); i++)
+    {
+        FS_Archive saveArch;
+        if(m.optSelected(i) && openSaveArch(&saveArch, sdTitle[i], false))
+            restoreData(sdTitle[i], saveArch, MODE_SAVE);
+        FSUSER_CloseArchive(saveArch);
+
+        FS_Archive extArch;
+        if(m.optSelected(i) && openExtdata(&extArch, sdTitle[i], false))
+            restoreData(sdTitle[i], extArch, MODE_EXTDATA);
+        FSUSER_CloseArchive(extArch);
+    }
 }

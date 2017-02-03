@@ -1,8 +1,24 @@
 #include <3ds.h>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 #include "dir.h"
+
+struct
+{
+    bool inline operator()(const FS_DirectoryEntry& a, const FS_DirectoryEntry& b)
+    {
+        for(uint32_t i = 0; i < 0x106; i++)
+        {
+            int charA = tolower(a.name[i]), charB = tolower(b.name[i]);
+            if(charA != charB)
+                return charA < charB;
+        }
+
+        return false;
+    }
+} sortDirs;
 
 dirList::dirList(FS_Archive arch, const std::u16string p)
 {
@@ -22,9 +38,12 @@ dirList::dirList(FS_Archive arch, const std::u16string p)
         FS_DirectoryEntry getEnt;
         FSDIR_Read(d, &read, 1, &getEnt);
         entry.push_back(getEnt);
-    }while(read > 0);
+    }
+    while(read > 0);
 
     FSDIR_Close(d);
+
+    std::sort(entry.begin(), entry.end() - 1, sortDirs);
 }
 
 //clears vector used
@@ -46,9 +65,12 @@ void dirList::reassign(const std::u16string p)
         FS_DirectoryEntry getEnt;
         FSDIR_Read(d, &read, 1, &getEnt);
         entry.push_back(getEnt);
-    }while(read > 0);
+    }
+    while(read > 0);
 
     FSDIR_Close(d);
+
+    std::sort(entry.begin(), entry.end() - 1, sortDirs);
 }
 
 //Always has an extra, so we subtract 1
@@ -60,16 +82,11 @@ unsigned dirList::count()
 //returns true if item is a directory
 bool dirList::isDir(int i)
 {
-    if(entry[i].attributes==FS_ATTRIBUTE_DIRECTORY)
-        return true;
-
-    return false;
+    return entry[i].attributes == FS_ATTRIBUTE_DIRECTORY;
 }
 
 //returns entry's name as u16string
 std::u16string dirList::retItem(int i)
 {
-    std::u16string ret;
-    ret.assign((char16_t *)entry[i].name);
-    return ret;
+    return std::u16string((char16_t *)entry[i].name);
 }

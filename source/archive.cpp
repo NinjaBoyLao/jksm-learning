@@ -3,60 +3,50 @@
 #include "titledata.h"
 #include "archive.h"
 #include "ui.h"
-#include "global.h"
 
 //All the information used here was found on 3dbrew.org
 //thank them too.
-bool openSaveArch(FS_Archive *out, const titleData dat, bool showError)
+bool openSaveArch(FS_Archive *out, const titleData dat, bool show)
 {
     //binary path
-    u32 path[3];
-    //first is mediaType
-    path[0] = dat.media;
-    //low id
-    path[1] = dat.low;
-    //high id. this is usually 0x00040000
-    path[2] = dat.high;
+    u32 path[3] = {dat.media, dat.low, dat.high};
 
     FS_Path binPath = {PATH_BINARY, 12, path};
 
-    //setup archive info
     Result res = FSUSER_OpenArchive(out, ARCHIVE_USER_SAVEDATA, binPath);
     if(res)
     {
-        if(showError)
-            showMessage("Error opening save archive!");
+        if(show)
+            showError("Error opening save archive", (unsigned)res);
         return false;
     }
 
     return true;
 }
 
-bool openCartArch(FS_Archive *out)
+bool openSaveArch3dsx(FS_Archive *arch)
 {
-    Result res = FSUSER_OpenArchive(out, ARCHIVE_GAMECARD_SAVEDATA, fsMakePath(PATH_EMPTY, ""));
+    Result res = FSUSER_OpenArchive(arch, ARCHIVE_SAVEDATA, fsMakePath(PATH_EMPTY, ""));
     if(res)
     {
+        showError("Error opening save archive", (unsigned)res);
         return false;
     }
 
     return true;
 }
 
-bool openExtdata(FS_Archive *out, const titleData dat, bool showError)
+bool openExtdata(FS_Archive *out, const titleData dat, bool show)
 {
-    u32 path[3];
-    path[0] = MEDIATYPE_SD;//always sd for extdata
-    path[1] = dat.extdata;
-    path[2] = 0;
+    u32 path[3] = {MEDIATYPE_SD, dat.extdata, 0};
 
     FS_Path binPath = {PATH_BINARY, 12, path};
 
     Result res = FSUSER_OpenArchive(out, ARCHIVE_EXTDATA, binPath);
     if(res)
     {
-        if(showError)
-            showMessage("Error opening ExtData! Title may not use it.");
+        if(show)
+            showError("Error opening ExtData", (unsigned)res);
         return false;
     }
 
@@ -65,17 +55,14 @@ bool openExtdata(FS_Archive *out, const titleData dat, bool showError)
 
 bool openSharedExt(FS_Archive *out, u32 id)
 {
-    u32 path[3];
-    path[0] = MEDIATYPE_NAND;
-    path[1] = id;
-    path[2] = 0x00048000;
+    u32 path[3] = {MEDIATYPE_NAND, id, 0x00048000};
 
     FS_Path binPath = {PATH_BINARY, 12, path};
 
     Result res = FSUSER_OpenArchive(out, ARCHIVE_SHARED_EXTDATA, binPath);
     if(res)
     {
-        showMessage("Error opening Shared Extdata!");
+        showError("Error opening Shared Extdata", (unsigned)res);
         return false;
     }
 
@@ -84,17 +71,14 @@ bool openSharedExt(FS_Archive *out, u32 id)
 
 bool openBossExt(FS_Archive *out, const titleData dat)
 {
-    u32 path[3];
-    path[0] = MEDIATYPE_SD;
-    path[1] = dat.extdata;
-    path[2] = 0;
+    u32 path[3] = {MEDIATYPE_SD, dat.extdata, 0};
 
     FS_Path binPath = {PATH_BINARY, 12, path};
 
     Result res = FSUSER_OpenArchive(out, ARCHIVE_BOSS_EXTDATA, binPath);
     if(res)
     {
-        showMessage("Error opening Boss Extdata! Title may not use it.");
+        showError("Error opening Boss Extdata", (unsigned)res);
         return false;
     }
 
@@ -103,9 +87,7 @@ bool openBossExt(FS_Archive *out, const titleData dat)
 
 bool openSysModule(FS_Archive *out, const titleData dat)
 {
-    u32 path[2];
-    path[0] = MEDIATYPE_NAND;
-    path[1] = (0x00010000 | dat.unique);
+    u32 path[2] = {MEDIATYPE_NAND, (0x00010000 | dat.unique)};
 
     FS_Path binPath = {PATH_BINARY, 8, path};
 
@@ -120,9 +102,7 @@ bool openSysModule(FS_Archive *out, const titleData dat)
 
 bool openSysSave(FS_Archive *out, const titleData dat)
 {
-    u32 path[2];
-    path[0] = MEDIATYPE_NAND;
-    path[1] = (0x00020000 | dat.unique);
+    u32 path[2] = {MEDIATYPE_NAND, (0x00020000 | dat.unique)};
 
     FS_Path binPath = {PATH_BINARY, 8, path};
 
@@ -134,7 +114,7 @@ bool openSysSave(FS_Archive *out, const titleData dat)
             return true;
         else
         {
-            showMessage("Error opening system save data. Title may not use it!");
+            showError("Error opening system save data", (unsigned)res);
             return false;
         }
     }

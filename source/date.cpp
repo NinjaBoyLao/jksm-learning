@@ -16,15 +16,15 @@ char *GetDate(int Format)
     switch(Format)
     {
         case FORMAT_YDM:
-        {
-            sprintf(Ret, "%04d-%02d-%02d_%02d-%02d", Time->tm_year + 1900, Time->tm_mday, Time->tm_mon + 1, Time->tm_hour, Time->tm_min);
-            break;
-        }
+            {
+                sprintf(Ret, "%04d-%02d-%02d_%02d-%02d-%02d", Time->tm_year + 1900, Time->tm_mday, Time->tm_mon + 1, Time->tm_hour, Time->tm_min, Time->tm_sec);
+                break;
+            }
         case FORMAT_YMD:
-        {
-            sprintf(Ret, "%04d-%02d-%02d_%02d-%02d", Time->tm_year + 1900, Time->tm_mon + 1, Time->tm_mday, Time->tm_hour, Time->tm_min);
-            break;
-        }
+            {
+                sprintf(Ret, "%04d-%02d-%02d_%02d-%02d-%02d", Time->tm_year + 1900, Time->tm_mon + 1, Time->tm_mday, Time->tm_hour, Time->tm_min, Time->tm_sec);
+                break;
+            }
     }
 
     return Ret;
@@ -33,8 +33,6 @@ char *GetDate(int Format)
 //this returns the time for the top bar
 std::string RetTime()
 {
-    std::string Ret;
-
     time_t Raw;
     time(&Raw);
     tm *Time = localtime(&Raw);
@@ -43,7 +41,5 @@ std::string RetTime()
 
     sprintf(Tmp, "%02d:%02d", Time->tm_hour, Time->tm_min);
 
-    Ret = Tmp;
-
-    return Ret;
+    return std::string(Tmp);
 }

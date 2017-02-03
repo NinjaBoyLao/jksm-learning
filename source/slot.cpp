@@ -15,138 +15,99 @@
 #include "button.h"
 #include "sdpath.h"
 
-std::string ConvertToString(const std::u16string c)
+void reinitDirMenu(menu *m, dirList *dir, std::u16string path, bool newFolder)
 {
-    std::string Ret;
-    for(unsigned i = 0; i < c.length(); i++)
-        Ret += c[i];
-    return Ret;
+    m->reset();
+    dir->reassign(path);
+
+    for(u32 i = 0; i < dir->count(); i++)
+        m->addItem(dir->retItem(i));
+    if(newFolder)
+        m->addItem("New");
+    if(centered)
+        m->centerOpts();
 }
 
-std::string GetSlot(bool nSlot, const titleData dat, int Mode)
+std::u16string getFolder(const titleData dat, int mode, bool newFolder)
 {
-	//String to return slot name
-    std::string Ret = "";
+    std::u16string ret;
+    std::u16string path = getPath(mode) + dat.nameSafe + (char16_t)'/';
 
-    //Path
-    std::u16string Path;
-    Path = getPath(Mode);
-    Path += dat.nameSafe;
-    Path += L'/';
-
-    dirList list(sdArch, Path);
-    if(list.count()==0 && !nSlot)
+    dirList dir(sdArch, path);
+    if(dir.count() == 0 && !newFolder)
     {
-        showMessage("Didn't find any data to import!");
-        return "";
+        showMessage("Didn't find any data to import!", "Nope");
+        return ret;
     }
 
-    menu getSlot(88, 20, false, true);
-    //Go through dirs found and add them to menu
-    for(unsigned i = 0; i < list.count(); i++)
-    {
-        getSlot.addItem(list.retItem(i));
-    }
-    //If we're allowing new slots
-    if(nSlot)
-        getSlot.addItem("New");
+    menu folderMenu(40, 20, false, centered);
+    for(unsigned i = 0; i < dir.count(); i++)
+        folderMenu.addItem(dir.retItem(i));
+    if(newFolder)
+        folderMenu.addItem("New");
+    if(centered)
+        folderMenu.centerOpts();
 
-    button help("Help", 224, 208, 96, 32);
-
-    bool Loop = true;
-    std::u32string info = tou32(dat.name) + modeText(Mode);
-    std::string helpText = "Select a Folder. Press X to rename, Y to delete, and B to cancel.";
-    while(Loop)
+    while(true)
     {
         hidScanInput();
-        u32 down = hidKeysDown();
-        u32 held = hidKeysHeld();
 
-        touchPosition pos;
-        hidTouchRead(&pos);
+        u32 down, held;
+        down = hidKeysDown();
+        held = hidKeysHeld();
 
-        getSlot.handleInput(down, held);
+        folderMenu.handleInput(down, held);
 
-        if(down & KEY_A)
+        if( (down & KEY_A) && ((u32)folderMenu.getSelected() + 1 > dir.count()))
         {
-            if((unsigned)(getSlot.getSelected() + 1) > list.count() && nSlot)
+            ret = tou16(GetString("Enter a name for the new folder.").c_str());
+            break;
+        }
+        else if(down & KEY_A)
+        {
+            ret = dir.retItem(folderMenu.getSelected());
+            break;
+        }
+        else if(down & KEY_X)
+        {
+            std::u16string newName = tou16(GetString("Enter a new name.").c_str());
+            if(!newName.empty() && (u32)folderMenu.getSelected() < dir.count())
             {
-                Ret = GetString("Enter a name for the new folder.");
-                return Ret;
-            }
-            else
-            {
-                Ret = ConvertToString(list.retItem(getSlot.getSelected()));
-                return Ret;
+                std::u16string oldPath = path + dir.retItem(folderMenu.getSelected());
+                std::u16string newPath = path + newName;
+
+                FSUSER_RenameDirectory(sdArch, fsMakePath(PATH_UTF16, oldPath.data()), sdArch, fsMakePath(PATH_UTF16, newPath.data()));
+
+                reinitDirMenu(&folderMenu, &dir, path, newFolder);
             }
         }
         else if(down & KEY_Y)
         {
-            unsigned Sel = getSlot.getSelected();
-
-            if(confirm("Delete selected save folder?") && Sel<list.count())
+            std::string confString = "Are you sure you want to delete '" + toString(dir.retItem(folderMenu.getSelected())) + "'?";
+            if(confirm(confString.c_str()))
             {
-                std::u16string delPath = Path;
-                delPath += list.retItem(Sel);
+                std::u16string delPath = path + dir.retItem(folderMenu.getSelected());
 
                 FSUSER_DeleteDirectoryRecursively(sdArch, fsMakePath(PATH_UTF16, delPath.data()));
 
-                list.reassign(Path);
-                if(list.count()==0 && !nSlot)
-                    Loop = false;
-                else
-                {
-                    getSlot.reset();
-                    for(unsigned i = 0; i < list.count(); i++)
-                        getSlot.addItem(list.retItem(i));
-                    if(nSlot)
-                        getSlot.addItem("New");
-                }
+                reinitDirMenu(&folderMenu, &dir, path, newFolder);
+                if(dir.count() == 0 && !newFolder)
+                    break;
             }
-        }
-        else if(down & KEY_X)
-        {
-            unsigned Sel = getSlot.getSelected();
-            if(Sel < list.count())
-            {
-                std::u16string oldPath = Path;
-                oldPath += list.retItem(Sel);
-
-                std::u16string newPath = Path;
-                std::string newName = GetString("Enter a new name for the folder.");
-                newPath.append(tou16(newName.c_str()));
-
-                FSUSER_RenameDirectory(sdArch, fsMakePath(PATH_UTF16, oldPath.data()), sdArch, fsMakePath(PATH_UTF16, newPath.data()));
-
-                list.reassign(Path);
-
-                getSlot.reset();
-                for(unsigned i = 0; i < list.count(); i++)
-                    getSlot.addItem(list.retItem(i));
-
-                if(nSlot)
-                    getSlot.addItem("New");
-            }
-        }
-        else if(help.released(pos))
-        {
-            showMessage(helpText.c_str());
         }
         else if(down & KEY_B)
-        {
-            return "";
-        }
+            break;
 
         sf2d_start_frame(GFX_TOP, GFX_LEFT);
-            drawTopBar(info);
-            getSlot.draw();
+        drawTopBar(U"Select a folder. X = Rename, Y = Delete");
+        folderMenu.draw();
         sf2d_end_frame();
 
         sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
-            help.draw();
         sf2d_end_frame();
 
         sf2d_swapbuffers();
     }
-    return "";
+
+    return ret;
 }

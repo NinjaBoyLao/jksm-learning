@@ -6,12 +6,13 @@
 
 #include "archive.h"
 #include "backup.h"
-#include "restore.h"
 #include "menu.h"
+#include "restore.h"
 #include "titledata.h"
 #include "global.h"
 #include "util.h"
 #include "ui.h"
+#include "extra.h"
 
 enum hblOpts
 {
@@ -20,40 +21,36 @@ enum hblOpts
     delSV,
     expExt,
     impExt,
+    extra,
     exit
 };
-
-bool openSaveArch3dsx(FS_Archive *arch)
-{
-    Result res = FSUSER_OpenArchive(arch, ARCHIVE_SAVEDATA, fsMakePath(PATH_EMPTY, ""));
-    if(res)
-    {
-        showMessage("Error opening save archive!");
-        return false;
-    }
-
-    return true;
-}
 
 void start3dsxMode()
 {
     u64 id;
     APT_GetProgramID(&id);
 
+    fsStart();
+    FS_MediaType getMedia;
+    FS_GetMediaType(&getMedia);
+    fsEnd();
+
     //This doesn't work if you start the FS session.
     titleData data;
-    if(!data.init(id, MEDIATYPE_GAME_CARD))
-        data.init(id, MEDIATYPE_SD);
+    data.init(id, getMedia);
+
+    renameDir(data);
 
     menu hblMenu(0, 80, false, true);
     hblMenu.addItem("Export Save");
-    hblMenu.addItem("Import Save");\
+    hblMenu.addItem("Import Save");
     hblMenu.addItem("Delete Secure Value");
     hblMenu.addItem("Export ExtData");
     hblMenu.addItem("Import ExtData");
+    hblMenu.addItem("Extras/Config");
     hblMenu.addItem("Exit");
 
-    std::u32string info = data.u32Name + U" : 3DSX Mode";
+    std::u32string info = data.u32Name + U" : 3DSX Mode - " + BUILD_DATE;
 
     fsStart();
 
@@ -87,7 +84,7 @@ void start3dsxMode()
                 case hblOpts::delSV:
                     fsEnd();
                     if(deleteSV(data))
-                        showMessage("Secure value successfully deleted!");
+                        showMessage("Secure value successfully deleted!", "Success!");
                     fsStart();
                     break;
                 case hblOpts::expExt:
@@ -101,6 +98,16 @@ void start3dsxMode()
                     if(openExtdata(&arch, data, false))
                         restoreData(data, arch, MODE_EXTDATA);
                     break;
+                case hblOpts::extra:
+                    while(1)
+                    {
+                        extrasMenu();
+
+                        if(hidKeysDown() & KEY_B)
+                            break;
+
+                    }
+                    break;
                 case hblOpts::exit:
                     kill = true;
                     break;
@@ -111,12 +118,12 @@ void start3dsxMode()
         killApp(down);
 
         sf2d_start_frame(GFX_TOP, GFX_LEFT);
-            drawTopBar(info);
-            hblMenu.draw();
+        drawTopBar(info);
+        hblMenu.draw();
         sf2d_end_frame();
 
         sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
-            data.printInfo();
+        data.printInfo();
         sf2d_end_frame();
 
         sf2d_swapbuffers();

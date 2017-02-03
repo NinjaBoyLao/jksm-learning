@@ -8,46 +8,26 @@
 #include "smdh.h"
 #include "util.h"
 
-const char16_t verboten[] = { L' ', L'.', L',', L'/', L'\\', L'<', L'>', L':', L'"', L'|', L'?', L'*'};//12
-
-bool isVerboten(char16_t d)
-{
-    for(int i = 0; i < 12; i++)
-    {
-        if(d==verboten[i])
-            return true;
-    }
-
-    return false;
-}
-
-std::u16string safeTitle(const std::u16string s)
-{
-    std::u16string ret;
-    for(unsigned i = 0; i < s.length(); i++)
-    {
-        if(isVerboten(s[i]))
-            ret += L'_';
-        else
-            ret += s[i];
-    }
-    return ret;
-}
-
 u32 extdataRedirect(u32 low)
 {
     //Pokemon Y
-    if(low==0x00055E00)
+    if(low == 0x00055E00)
         return 0x0000055D;
     //Pokemon OR
-    else if(low==0x0011C400)
+    else if(low == 0x0011C400)
         return 0x000011C5;
+    //Pokemon Moon
+    else if(low == 0x00175E00)
+        return 0x00001648;
     //Fire Emblem Conquest + SE NA
-    else if(low==0x00179600 || low==0x00179800)
+    else if(low == 0x00179600 || low == 0x00179800)
         return 0x00001794;
     //FE Conquest + SE EURO
-    else if(low==0x00179700 || low==0x0017A800)
+    else if(low == 0x00179700 || low == 0x0017A800)
         return 0x00001795;
+    //FE If/JPN
+    else if(low == 0x0012DD00 || low == 0x0012DE00)
+        return 0x000012DC;
 
     return (low >> 8);
 }
@@ -65,13 +45,16 @@ bool titleData::init(u64 _id, FS_MediaType mediaType)
     //some titles use a different id for extdata
     extdata = extdataRedirect(low);
 
-    smdh = loadSMDH(low, high, media);
-    if(smdh==NULL)
+    smdh_s *smdh = loadSMDH(low, high, media);
+    if(smdh == NULL)
         return false;
 
-    name.assign((char16_t *)smdh->applicationTitles[1].shortDescription);
+    name = (char16_t *)smdh->applicationTitles[sysLanguage].shortDescription;
+    //Default to english if title is empty for language
+    if(name.empty())
+        name = (char16_t *)smdh->applicationTitles[1].shortDescription;
     u32Name = tou32(name);
-    nameSafe = safeTitle(name);
+    nameSafe = safeString(name);
 
     delete smdh;
 
@@ -96,7 +79,7 @@ void titleData::initId()
 
     media = MEDIATYPE_SD;
 
-    nameSafe = safeTitle(name);
+    nameSafe = safeString(name);
     u32Name = tou32(name);
 
     initd = true;

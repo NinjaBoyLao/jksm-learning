@@ -6,7 +6,6 @@
 
 #include "global.h"
 #include "menu.h"
-#include "img.h"
 
 #define FONT_SIZE 12
 
@@ -80,6 +79,18 @@ void menu::addItem(const std::u16string a)
     delete[] tmp;
 }
 
+void menu::updateItem(int i, const char *a)
+{
+    char32_t tmp[128];
+    memset(tmp, 0, 128);
+
+    utf8_to_utf32((uint32_t *)tmp, (uint8_t *)a, 128);
+
+    menuItem update(tmp, center, x);
+
+    opts[i] = update;
+}
+
 void menu::draw()
 {
     int i, length;
@@ -119,7 +130,7 @@ void menu::handleInput(u32 key, u32 held)
         fc = 0;
 
     int size = opts.size() - 1;
-    if((key & KEY_UP) || ((held & KEY_UP) && fc==10))
+    if((key & KEY_UP) || ((held & KEY_UP) && fc == 10))
     {
         selected--;
         if(selected < 0)
@@ -132,7 +143,7 @@ void menu::handleInput(u32 key, u32 held)
         else if(selected == size && size > 15)
             start = size - 14;
     }
-    else if((key & KEY_DOWN) || ((held & KEY_DOWN) && fc==10))
+    else if((key & KEY_DOWN) || ((held & KEY_DOWN) && fc == 10))
     {
         selected++;
         if(selected > size)
@@ -187,6 +198,12 @@ void menu::reset()
     selected = 0;
     start = 0;
     opts.clear();
+}
+
+void menu::centerOpts()
+{
+    for(unsigned i = 0; i < opts.size(); i++)
+        opts[i].autoCenter();
 }
 
 void menu::autoVert()

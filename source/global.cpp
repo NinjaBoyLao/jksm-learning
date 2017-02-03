@@ -1,6 +1,7 @@
 #include <3ds.h>
 #include <sf2d.h>
 #include <sftd.h>
+#include <sfil.h>
 #include <stdio.h>
 #include <string>
 
@@ -19,31 +20,36 @@
 #include "hbfilter.h"
 #include "extra.h"
 #include "shared.h"
+#include "dev.h"
+#include "ui.h"
 
-int state = states::STATE_MAINMENU, prevState = states::STATE_MAINMENU;
-titleData *curTitle = NULL;
-
-unsigned buff_size = 0x10000;
-unsigned frameCount = 0;
+unsigned buff_size = 0x40000;
 
 sftd_font * font;
 
-sf2d_texture * bar;
+static sf2d_texture * bar;
+
+void topBarInit()
+{
+    bar = sfil_load_PNG_file("romfs:/img/topBar.png", SF2D_PLACE_RAM);
+}
+
+void topBarExit()
+{
+    sf2d_free_texture(bar);
+}
 
 FS_Archive sdArch;
 
-bool useTouch, _date, hbl = false;
+bool hbl = false, devMode = false, kill = false;
 
-bool devMode = false;
-
-bool kill = false;
+//config
+bool centered = true, autoBack = false, useLang = false;
 
 //default colors
 u8 clearColor[3] = {0, 0, 0};
 u8 selColor[3] = {0, 255, 0};
 u8 unSelColor[3] = {128, 128, 128};
-
-std::u32string nameEnterString = U"Enter a folder name. Press A when finished.";
 
 //draws the bar shown up top
 void drawTopBar(const std::u32string nfo)
@@ -57,6 +63,12 @@ void drawTopBar(const std::u32string nfo)
     //time
     sftd_draw_text(font, 360, 0, RGBA8(0, 0, 0, 255), 12, RetTime().c_str());
 }
+
+//I needed a quick way to get most of it under one loop without having to completely rewrite it
+//This is what I came up with.
+int state = states::STATE_MAINMENU, prevState = states::STATE_MAINMENU;
+titleData *curTitle = NULL;
+u8 sysLanguage = 1;
 
 void handleState()
 {
@@ -95,6 +107,13 @@ void handleState()
         case states::STATE_SHAREDBACKUP:
             sharedBackupMenu();
             break;
+        case states::STATE_DEVMENU:
+            showDevMenu();
+            break;
+        default:
+            showMessage("This shouldn't happen.", "Umm...");
+            state = states::STATE_MAINMENU;
+            break;
     }
 }
 
@@ -113,7 +132,8 @@ enum mMenuOpts
     ref,
     filter,
     extra,
-    exit
+    exit,
+    dev
 };
 
 static menu mMenu(136, 80, false, true);
@@ -126,8 +146,11 @@ void prepMain()
     mMenu.addItem("Shared ExtData");
     mMenu.addItem("Refresh Games");
     mMenu.addItem("Download Filter");
-    mMenu.addItem("Extras");
+    mMenu.addItem("Config/Extras");
     mMenu.addItem("Exit");
+
+    if(devMode)
+        mMenu.addItem("Dev");
 
     mMenu.autoVert();
 }
@@ -159,7 +182,6 @@ void mainMenu()
             case mMenuOpts::ref:
                 remove("titles");
                 sdTitlesInit();
-                refreshed = true;
                 break;
             case mMenuOpts::filter:
                 remove("filter.txt");
@@ -171,14 +193,19 @@ void mainMenu()
             case mMenuOpts::exit:
                 kill = true;
                 break;
+            case mMenuOpts::dev:
+                state = STATE_DEVMENU;
+                break;
         }
     }
+    else if(down & KEY_B)
+        kill = true;
 
     killApp(down);
 
     sf2d_start_frame(GFX_TOP, GFX_LEFT);
-        drawTopBar(U"JKSM - 7/23/2016");
-        mMenu.draw();
+    drawTopBar(std::u32string(U"JKSM - " + BUILD_DATE));
+    mMenu.draw();
     sf2d_end_frame();
 
     sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);

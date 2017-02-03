@@ -26,9 +26,14 @@ class menu
         void addItem(const char *a);
         void addItem(const std::u16string a);
         void addItem(const std::u32string a);
+
+        void updateItem(int i, const char *a);
+
         int getSelected();
         void setSelected(int sel);
         void reset();
+
+        void centerOpts();
         void autoVert();
 
         unsigned getSize();

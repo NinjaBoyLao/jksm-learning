@@ -12,6 +12,14 @@
 
 std::string GetString(const char *hint)
 {
+    hidScanInput();
+
+    u32 held = hidKeysHeld();
+    if(held & KEY_L)
+        return GetDate(FORMAT_YDM);
+    else if(held & KEY_R)
+        return  GetDate(FORMAT_YMD);
+
     SwkbdState keyState;
     char input[64];
 
@@ -21,6 +29,7 @@ std::string GetString(const char *hint)
     SwkbdDictWord dates[2];
     swkbdSetDictWord(&dates[0], "2016", GetDate(FORMAT_YDM));
     swkbdSetDictWord(&dates[1], "2016", GetDate(FORMAT_YMD));
+    swkbdSetInitialText(&keyState, GetDate(FORMAT_YMD));
     swkbdSetDictionary(&keyState, dates, 2);
 
     swkbdInputText(&keyState, input, 64);
@@ -28,15 +37,20 @@ std::string GetString(const char *hint)
     return std::string(input);
 }
 
-int getInt(const char *hint, int maxValue)
+int getInt(const char *hint, int init, int maxValue)
 {
     SwkbdState keyState;
-    char input[4];
+    char input[8];
 
-    swkbdInit(&keyState, SWKBD_TYPE_NUMPAD, 2, 4);
+    swkbdInit(&keyState, SWKBD_TYPE_NUMPAD, 2, 8);
     swkbdSetHintText(&keyState, hint);
+    if(init != -1)
+    {
+        sprintf(input, "%i", init);
+        swkbdSetInitialText(&keyState, input);
+    }
 
-    SwkbdButton pressed = swkbdInputText(&keyState, input, 4);
+    SwkbdButton pressed = swkbdInputText(&keyState, input, 8);
     int ret;
     //Cancel
     if(pressed == SWKBD_BUTTON_LEFT)

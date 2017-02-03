@@ -5,40 +5,37 @@
 
 #include "global.h"
 #include "button.h"
-#include "img.h"
 #include "util.h"
-
-using namespace std;
 
 button::button(const char * sText, int sX, int sY, int sWidth, int sHeight)
 {
-    Box = new textbox(sX, sY, sWidth, sHeight, sText);
-
     X = sX;
     Y = sY;
     width = sWidth;
     height = sHeight;
+    text = sText;
+
+    textX =  X + 8;
+    textY = Y + 8;
 
     Pressed = false;
 }
 
-button::~button()
-{
-    delete Box;
-}
-
 void button::draw()
 {
-    Box->draw(Pressed);
+    sf2d_draw_rectangle(X - 1, Y - 1, width + 2, height + 2, RGBA8(64, 64, 64, 255));
+    if(Pressed)
+        sf2d_draw_rectangle(X, Y, width, height, RGBA8(200, 200, 200, 255));
+    else
+        sf2d_draw_rectangle(X, Y, width, height, RGBA8(244, 244, 244, 255));
+
+    sftd_draw_text(font, textX, textY, RGBA8(0, 0, 0, 255), 12, text.c_str());
 }
 
 //This checks whether the stylus is inside the button
 bool button::isOver(touchPosition p)
 {
-    if( (p.px > X && p.px < X + width) && (p.py > Y && p.py < Y + height) )
-        return true;
-
-    return false;
+    return (p.px > X && p.px < X + width) && (p.py > Y && p.py < Y + height);
 }
 
 //Checks if the stylus was removed.

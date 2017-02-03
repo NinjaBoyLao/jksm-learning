@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "font_ttf.h"
-#include "img.h"
 #include "global.h"
 #include "textbox.h"
 #include "ui.h"
@@ -16,18 +15,16 @@
 #include "titles.h"
 #include "hbfilter.h"
 
-extern std::vector<u32> filterID;
-
 void loadImgs()
 {
-    bar = sf2d_create_texture_mem_RGBA8(TopBar.pixel_data, TopBar.width, TopBar.height, TEXFMT_RGBA8, SF2D_PLACE_RAM);
+    topBarInit();
     textboxInit();
     progressBarInit();
 }
 
 void freeImgs()
 {
-    sf2d_free_texture(bar);
+    topBarExit();
     textboxExit();
     progressBarExit();
 }
@@ -36,12 +33,9 @@ void loadCol()
 {
     FILE *colBin = fopen("colBin", "rb");
 
-    for(int i = 0; i < 3; i++)
-        clearColor[i] = fgetc(colBin);
-    for(int i = 0; i < 3; i++)
-        selColor[i] = fgetc(colBin);
-    for(int i = 0; i < 3; i++)
-        unSelColor[i] = fgetc(colBin);
+    fread(clearColor, 1, 3, colBin);
+    fread(selColor, 1, 3, colBin);
+    fread(unSelColor, 1, 3, colBin);
 
     fclose(colBin);
 }
@@ -50,11 +44,20 @@ void changeBuffSize()
 {
     FILE *bSize = fopen("buff_size", "rb");
 
-    buff_size = 0;
-    for(int i = 0; i < 4; i++)
-        buff_size += (fgetc(bSize) << (8 * i));
+    fread(&buff_size, sizeof(u32), 1, bSize);
 
     fclose(bSize);
+}
+
+void loadCfg()
+{
+    FILE *config = fopen("config", "rb");
+
+    centered = fgetc(config);
+    autoBack = fgetc(config);
+    useLang = fgetc(config);
+
+    fclose(config);
 }
 
 //I just use this so I don't have to type so much. I'm lazy
@@ -65,39 +68,36 @@ void createDir(const char *path)
 
 void sysInit()
 {
-    mkdir("/JKSV", 0777);
+    romfsInit();
 
+    mkdir("/JKSV", 0777);
     chdir("/JKSV");
 
     if(fexists("colBin"))
         loadCol();
     if(fexists("buff_size"))
         changeBuffSize();
+    if(fexists("config"))
+        loadCfg();
 
     //Start sf2d
     sf2d_init();
     //Set clear to black
     sf2d_set_clear_color(RGBA8(clearColor[0], clearColor[1], clearColor[2], 255));
 
-    sf2d_set_3D(0);
-
-    //Load graphics needed
     loadImgs();
 
     //Start sftd
     sftd_init();
     //Load font
-    if(fexists("font.ttf"))
-        font = sftd_load_font_file("font.ttf");
-    else
-        font = sftd_load_font_mem(font_ttf, font_ttf_size);
+    font = sftd_load_font_mem(font_ttf, font_ttf_size);
 
     //Start 3ds services
     amInit();
     aptInit();
     srvInit();
-    hidInit();
     acInit();
+    cfguInit();
     httpcInit(0);
 
     loadFilterList();
@@ -106,8 +106,11 @@ void sysInit()
     Result Res = FSUSER_OpenArchive(&sdArch, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""));
     if(Res)
     {
-        showMessage("Error opening SDMC archive!");
+        showError("Error opening SDMC archive", (unsigned)Res);
     }
+
+    if(useLang)
+        CFGU_GetSystemLanguage(&sysLanguage);
 
     createDir("/JKSV/Saves");
     createDir("/JKSV/ExtData");
@@ -129,13 +132,11 @@ void sysExit()
     srvExit();
     hidExit();
     acExit();
+    cfguExit();
     httpcExit();
+    romfsExit();
 
     freeImgs();
-
-    sdTitle.clear();
-    nandTitle.clear();
-    filterID.clear();
 
     sftd_free_font(font);
     sftd_fini();

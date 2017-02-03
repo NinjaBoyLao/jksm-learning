@@ -11,6 +11,8 @@
 #include "smdh.h"
 #include "archive.h"
 
+static Handle fsHandle;
+
 std::u32string tou32(const std::u16string t)
 {
     char32_t tmp[256];
@@ -21,34 +23,11 @@ std::u32string tou32(const std::u16string t)
     return std::u32string(tmp);
 }
 
-std::u32string modeText(int mode)
-{
-    std::u32string ret;
-    switch(mode)
-    {
-        case MODE_SAVE:
-            ret = U" : Save";
-            break;
-        case MODE_EXTDATA:
-            ret = U" : ExtData";
-            break;
-        case MODE_BOSS:
-            ret = U" : Boss ExtData";
-            break;
-        case MODE_SYSSAVE:
-            ret = U" : System Save";
-            break;
-        case MODE_SHARED:
-            ret = U" : Shared ExtData";
-            break;
-    }
-    return ret;
-}
 
 std::u16string tou16(const char *t)
 {
     char16_t tmp[256];
-    memset(tmp, 0, sizeof(char16_t) * 256);
+    memset(tmp, 0, 256);
 
     utf8_to_utf16((uint16_t *)tmp, (uint8_t *)t, 256);
 
@@ -63,6 +42,31 @@ std::string toString(const std::u16string t)
         ret += t[i];
 
     return ret;
+}
+
+std::u32string modeText(int mode)
+{
+    switch(mode)
+    {
+        case MODE_SAVE:
+            return U" : Save";
+            break;
+        case MODE_EXTDATA:
+            return U" : ExtData";
+            break;
+        case MODE_BOSS:
+            return U" : Boss ExtData";
+            break;
+        case MODE_SYSSAVE:
+            return U" : System Save";
+            break;
+        case MODE_SHARED:
+            return U" : Shared ExtData";
+            break;
+        default:
+            return U"";
+            break;
+    }
 }
 
 void writeErrorToBuff(u8 *buff, size_t bSize, unsigned error)
@@ -85,6 +89,59 @@ void createTitleDir(const titleData t, int mode)
     FSUSER_CreateDirectory(sdArch, fsMakePath(PATH_UTF16, create.data()), 0);
 }
 
+void renameU16(std::u16string oldName, std::u16string newName)
+{
+    FSUSER_RenameDirectory(sdArch, fsMakePath(PATH_UTF16, oldName.data()), sdArch, fsMakePath(PATH_UTF16, newName.data()));
+}
+
+void renameDir(const titleData t)
+{
+    std::u16string oldName, oldPath, newPath;
+    if(hbl)
+    {
+        //get old one with '_'s
+        oldName = safeStringOld(t.name);
+
+        //Rename save dirs
+        oldPath = getPath(MODE_SAVE) + oldName;
+        newPath = getPath(MODE_SAVE) + t.nameSafe;
+        renameU16(oldPath, newPath);
+
+        //rename extdat
+        oldPath = getPath(MODE_EXTDATA) + oldName;
+        newPath = getPath(MODE_EXTDATA) + t.nameSafe;
+        renameU16(oldPath, newPath);
+    }
+    else if(t.media == MEDIATYPE_SD)
+    {
+        oldName = safeStringOld(t.name);
+
+        oldPath = getPath(MODE_SAVE) + oldName;
+        newPath = getPath(MODE_SAVE) + t.nameSafe;
+        renameU16(oldPath, newPath);
+
+        oldPath = getPath(MODE_EXTDATA) + oldName;
+        newPath = getPath(MODE_EXTDATA) + t.nameSafe;
+        renameU16(oldPath, newPath);
+    }
+    else if(t.media == MEDIATYPE_NAND)
+    {
+        oldName = safeStringOld(t.name);
+
+        oldPath = getPath(MODE_SYSSAVE) + oldName;
+        newPath = getPath(MODE_SYSSAVE) + t.nameSafe;
+        renameU16(oldPath, newPath);
+
+        oldPath = getPath(MODE_EXTDATA) + oldName;
+        newPath = getPath(MODE_EXTDATA) + t.nameSafe;
+        renameU16(oldPath, newPath);
+
+        oldPath = getPath(MODE_BOSS) + oldName;
+        newPath = getPath(MODE_BOSS) + t.nameSafe;
+        renameU16(oldPath, newPath);
+    }
+}
+
 bool deleteSV(const titleData t)
 {
     u64 in = ((u64)SECUREVALUE_SLOT_SD << 32) | (t.unique << 8);
@@ -93,7 +150,7 @@ bool deleteSV(const titleData t)
     Result res = FSUSER_ControlSecureSave(SECURESAVE_ACTION_DELETE, &in, 8, &out, 1);
     if(res)
     {
-        showMessage("Failed to delete secure value!");
+        showError("Failed to delete secure value", (u32)res);
         return false;
     }
 
@@ -102,26 +159,27 @@ bool deleteSV(const titleData t)
 
 std::u16string getPath(int mode)
 {
-    std::u16string ret;
     switch(mode)
     {
         case MODE_SAVE:
-            ret = tou16("/JKSV/Saves/");
+            return tou16("/JKSV/Saves/");
             break;
         case MODE_EXTDATA:
-            ret = tou16("/JKSV/ExtData/");
+            return tou16("/JKSV/ExtData/");
             break;
         case MODE_BOSS:
-            ret = tou16("/JKSV/Boss/");
+            return tou16("/JKSV/Boss/");
             break;
         case MODE_SYSSAVE:
-            ret = tou16("/JKSV/SysSave/");
+            return tou16("/JKSV/SysSave/");
             break;
         case MODE_SHARED:
-            ret = tou16("/JKSV/Shared/");
+            return tou16("/JKSV/Shared/");
+            break;
+        default:
+            return tou16("/JKSV/");
             break;
     }
-    return ret;
 }
 
 bool runningUnder()
@@ -129,46 +187,42 @@ bool runningUnder()
     u64 id;
     APT_GetProgramID(&id);
 
-    //check if it's using its own ID
-    if(id==0x0004000002c23200)
-        return false;
-
-    return true;
+    return id == 0x0004000002c23200 ? false : true;
 }
 
 void deleteExtdata(const titleData dat)
 {
-    FS_ExtSaveDataInfo del;
-    del.mediaType = MEDIATYPE_SD;
-    del.saveId = dat.extdata;
+    FS_ExtSaveDataInfo del = {MEDIATYPE_SD, 0, 0, dat.extdata, 0};
 
     Result res = FSUSER_DeleteExtSaveData(del);
     if(res)
-    {
-        char tmp[256];
-        sprintf(tmp, "Error deleting ExtData! 0x%08X.", (unsigned)res);
-        showMessage(tmp);
-    }
+        showError("Error deleting Extra Data", (u32)res);
+    else
+        showMessage("Extra Data deleted!", "Success");
 }
 
 void createExtData(const titleData dat)
 {
-    FS_ExtSaveDataInfo create;
-    create.mediaType = MEDIATYPE_SD;
-    create.saveId = dat.extdata;
-
+    FS_ExtSaveDataInfo create = {MEDIATYPE_SD, 0, 0, dat.extdata, 0};
     smdh_s *tempSmdh = loadSMDH(dat.low, dat.high, dat.media);
 
     //100 should be enough, right?
-    Result res = FSUSER_CreateExtSaveData(create, 100, 100, 0x10000000, sizeof(smdh_s), (u8 *)tempSmdh);
-    if(res)
+    Result res;
+    if(tempSmdh == NULL)
     {
-        char error[256];
-        sprintf(error, "Error creating extData! 0x%08X.", (unsigned)res);
-        showMessage(error);
+        u8 *emptySmdh = new u8[sizeof(smdh_s)];
+        memset(emptySmdh, 0, sizeof(smdh_s));
+        res = FSUSER_CreateExtSaveData(create, 100, 100, 0x10000000, sizeof(smdh_s), emptySmdh);
+        delete[] emptySmdh;
     }
     else
-        showMessage("ExtData created successfully!");
+        res = FSUSER_CreateExtSaveData(create, 100, 100, 0x10000000, sizeof(smdh_s), (u8 *)tempSmdh);
+    if(res)
+    {
+        showError("Error creating Extra Data", (u32)res);
+    }
+    else
+        showMessage("ExtData created!", "Success!");
 
     delete tempSmdh;
 }
@@ -182,32 +236,18 @@ void evenString(std::string *test)
 //Just returns whether or not the touch screen is pressed anywhere.
 bool touchPressed(touchPosition p)
 {
-    //I don't think either of these are ever 0
-    //unless the screen isn't touched.
-    if(p.px>0 || p.py>0)
-        return true;
-
-    return false;
-}
-
-void sleep(int s)
-{
-    s64 time = s * 1000000000;
-    svcSleepThread(time);
+    return (p.px > 0 || p.py > 0);
 }
 
 bool modeExtdata(int mode)
 {
-    if(mode==MODE_EXTDATA || mode==MODE_BOSS || mode==MODE_SHARED)
-        return true;
-
-    return false;
+    return (mode == MODE_EXTDATA || mode == MODE_BOSS || mode == MODE_SHARED);
 }
 
 bool fexists(const char *path)
 {
     FILE *test = fopen(path, "r");
-    if(test==NULL)
+    if(test == NULL)
         return false;
 
     fclose(test);
@@ -217,10 +257,9 @@ bool fexists(const char *path)
 
 void fsStart()
 {
-   Handle fs;
-   srvGetServiceHandleDirect(&fs, "fs:USER");
-   FSUSER_Initialize(fs);
-   fsUseSession(fs);
+    srvGetServiceHandleDirect(&fsHandle, "fs:USER");
+    FSUSER_Initialize(fsHandle);
+    fsUseSession(fsHandle);
 }
 
 void fsEnd()
@@ -228,7 +267,88 @@ void fsEnd()
     fsEndUseSession();
 }
 
-extern void prepMain(), prepBackMenu(), prepSaveMenu(), prepExtMenu(), prepNandBackup(), prepSharedMenu(), prepSharedBackMenu();
+void fsCommitData(FS_Archive arch)
+{
+    FSUSER_ControlArchive(arch, ARCHIVE_ACTION_COMMIT_SAVE_DATA, NULL, 0, NULL, 0);
+}
+
+Result FS_GetMediaType(FS_MediaType *m)
+{
+    Result res = 0;
+
+    u32 *cmdBuf = getThreadCommandBuffer();
+
+    cmdBuf[0] = IPC_MakeHeader(0x868, 0, 0);
+    cmdBuf[1] = 0;
+
+    if(R_FAILED(res = svcSendSyncRequest(fsHandle)))
+        return res;
+
+    *m = (FS_MediaType)cmdBuf[2];
+
+    return (Result)cmdBuf[1];
+}
+
+//I seriously can't remember why I put space in there. I don't like it anymore.
+const char16_t oldVerboten[] = { L' ', L'.', L',', L'/', L'\\', L'<', L'>', L':', L'"', L'|', L'?', L'*'};//12
+const char16_t newVerboten[] = { L'.', L',', L'/', L'\\', L'<', L'>', L':', L'"', L'|', L'?', L'*'};
+
+bool isVerbotenOld(char16_t d)
+{
+    for(int i = 0; i < 12; i++)
+    {
+        if(d == oldVerboten[i])
+            return true;
+    }
+
+    return false;
+}
+
+bool isVerboten(char16_t d)
+{
+    for(int i = 0; i < 11; i++)
+    {
+        if(d == newVerboten[i])
+            return true;
+    }
+
+    return false;
+}
+
+std::u16string safeStringOld(const std::u16string s)
+{
+    std::u16string ret;
+    for(unsigned i = 0; i < s.length(); i++)
+    {
+        if(isVerbotenOld(s[i]))
+            ret += L'_';
+        else
+            ret += s[i];
+    }
+    return ret;
+}
+
+std::u16string safeString(const std::u16string s)
+{
+    std::u16string ret;
+    for(unsigned i = 0; i < s.length(); i++)
+    {
+        if(isVerboten(s[i]))
+            ret += ' ';
+        else
+            ret += s[i];
+    }
+
+    int lastChar = ret.length() - 1;
+    if(ret.c_str()[lastChar] == L' ')
+        ret.erase(lastChar, 1);
+
+    return ret;
+}
+
+extern void prepMain(), prepBackMenu(), prepSaveMenu();
+extern void prepExtMenu(), prepNandBackup(), prepSharedMenu();
+extern void prepSharedBackMenu(), prepExtras(), prepDevMenu();
 
 void prepareMenus()
 {
@@ -239,4 +359,7 @@ void prepareMenus()
     prepNandBackup();
     prepSharedMenu();
     prepSharedBackMenu();
+    prepExtras();
+    if(devMode)
+        prepDevMenu();
 }

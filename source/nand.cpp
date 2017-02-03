@@ -17,12 +17,14 @@
 
 titleData * sysTitle = NULL;
 
-static menu nandMenu(88, 20, false, true);
+static menu nandMenu(40, 20, false, false);
 
 void prepNandSelect()
 {
     for(unsigned i = 0; i < nandTitle.size(); i++)
         nandMenu.addItem(nandTitle[i].name);
+    if(centered)
+        nandMenu.centerOpts();
 
     nandMenu.autoVert();
 }
@@ -47,12 +49,12 @@ void nandStartSelect()
     killApp(down);
 
     sf2d_start_frame(GFX_TOP, GFX_LEFT);
-        nandMenu.draw();
-        drawTopBar(U"Select System Title");
+    nandMenu.draw();
+    drawTopBar(U"Select System Title");
     sf2d_end_frame();
 
     sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
-        nandTitle[nandMenu.getSelected()].printInfo();
+    nandTitle[nandMenu.getSelected()].printInfo();
     sf2d_end_frame();
 
     sf2d_swapbuffers();
@@ -150,8 +152,8 @@ void nandBackup()
     killApp(down);
 
     sf2d_start_frame(GFX_TOP, GFX_LEFT);
-        drawTopBar(info);
-        nBackupMenu.draw();
+    drawTopBar(info);
+    nBackupMenu.draw();
     sf2d_end_frame();
 
     sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);

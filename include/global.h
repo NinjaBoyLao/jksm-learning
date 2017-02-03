@@ -15,8 +15,11 @@
 #define MODE_BOSS 3
 #define MODE_SHARED 4
 
+#define BUILD_DATE std::u32string(U"11-21-2016")
+
 extern int state, prevState;
 extern titleData *curTitle;
+extern u8 sysLanguage;
 
 enum states
 {
@@ -30,7 +33,8 @@ enum states
     STATE_NANDBACKUP,
     STATE_EXTRAS,
     STATE_SHARED,
-    STATE_SHAREDBACKUP
+    STATE_SHAREDBACKUP,
+    STATE_DEVMENU
 };
 
 void handleState();
@@ -41,8 +45,9 @@ extern unsigned buff_size;
 //This is the font used to print everything
 extern sftd_font *font;
 
-//This is the bar you see at the top
-extern sf2d_texture *bar;
+//This is for the bar you see at the top
+void topBarInit();
+void topBarExit();
 
 //SDMC Archive. Seems to write faster using this. Might just be me though
 extern FS_Archive sdArch;
@@ -50,24 +55,17 @@ extern FS_Archive sdArch;
 //This draws the bar you see at the top
 void drawTopBar(const std::u32string nfo);
 
-//Settings
-extern bool useTouch, _date, hbl;
+extern bool devMode, hbl, kill;
+//config
+extern bool centered, autoBack, useLang;
 
-//Turns off filters and other stuff
-extern bool devMode;
-
-//handles killing the app
-//this breaks every loop and allows
-//sysExit() to run at the end.
-extern bool kill;
+//Allows app to be killed by hitting start
 void killApp(u32 up);
 
 //got tired of black, gray, and green all the time
 extern u8 clearColor[3];
 extern u8 selColor[3];
 extern u8 unSelColor[3];
-
-extern std::u32string nameEnterString;
 
 void mainMenu();
 

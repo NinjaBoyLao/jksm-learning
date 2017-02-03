@@ -11,18 +11,6 @@
 #include "global.h"
 #include "backupmenu.h"
 
-//We can try two different ways with carts
-bool openCart(FS_Archive *out, const titleData dat)
-{
-    //if first way works
-    if(openCartArch(out))
-        return true;
-    else if(openSaveArch(out, dat, true))
-        return true;
-
-    return false;
-}
-
 bool cartCheck()
 {
     //Check if there is a cart
@@ -30,16 +18,16 @@ bool cartCheck()
     FSUSER_CardSlotIsInserted(&cartInserted);
     if(!cartInserted)
     {
-        showMessage("No cartridge inserted!");
+        showMessage("No cartridge inserted!", "Error:");
         return false;
     }
 
     //Make sure it's a 3ds game
     FS_CardType type;
     FSUSER_GetCardType(&type);
-    if(type!=CARD_CTR)
+    if(type != CARD_CTR)
     {
-        showMessage("No DS support.");
+        showMessage("No DS support.", "Sorry...");
         return false;
     }
 
@@ -59,7 +47,7 @@ void cartManager()
 
     //use titledata to take care of everything
     static titleData cartData;
-    if(cartData.id!=cartID || !cartData.initd)
+    if(cartData.id != cartID || !cartData.initd)
     {
         cartData.init(cartID, MEDIATYPE_GAME_CARD);
     }
