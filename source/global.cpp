@@ -132,7 +132,7 @@ enum mMenuOpts
     ref,
     filter,
     extra,
-    exit,
+    exitapp,
     dev
 };
 
@@ -190,7 +190,7 @@ void mainMenu()
             case mMenuOpts::extra:
                 state = STATE_EXTRAS;
                 break;
-            case mMenuOpts::exit:
+            case mMenuOpts::exitapp:
                 kill = true;
                 break;
             case mMenuOpts::dev:
