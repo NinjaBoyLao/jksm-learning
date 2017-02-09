@@ -22,7 +22,7 @@ enum hblOpts
     expExt,
     impExt,
     extra,
-    exit
+    exitapp
 };
 
 void start3dsxMode()
@@ -108,7 +108,7 @@ void start3dsxMode()
 
                     }
                     break;
-                case hblOpts::exit:
+                case hblOpts::exitapp:
                     kill = true;
                     break;
             }
