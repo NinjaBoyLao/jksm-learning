@@ -7,13 +7,12 @@
 #include "slot.h"
 #include "titledata.h"
 #include "gstr.h"
-#include "dir.h"
 #include "menu.h"
 #include "global.h"
 #include "util.h"
 #include "ui.h"
-#include "button.h"
 #include "sdpath.h"
+#include "file.h"
 
 void reinitDirMenu(menu *m, dirList *dir, std::u16string path, bool newFolder)
 {

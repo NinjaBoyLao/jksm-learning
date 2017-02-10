@@ -32,7 +32,7 @@ void start3dsxMode()
 
     fsStart();
     FS_MediaType getMedia;
-    FS_GetMediaType(&getMedia);
+    FSUSER_GetMediaType(&getMedia);
     fsEnd();
 
     //This doesn't work if you start the FS session.

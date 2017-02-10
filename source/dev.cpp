@@ -6,6 +6,7 @@
 #include "menu.h"
 #include "util.h"
 #include "global.h"
+#include "ui.h"
 
 //This is just for testing stuff.
 

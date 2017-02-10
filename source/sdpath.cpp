@@ -2,12 +2,11 @@
 #include <string>
 
 #include "sdpath.h"
-#include "dir.h"
 #include "menu.h"
 #include "global.h"
 #include "util.h"
 #include "ui.h"
-#include "button.h"
+#include "file.h"
 
 void copyListToMenu(menu *m, dirList d)
 {

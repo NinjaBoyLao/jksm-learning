@@ -8,6 +8,7 @@
 #include "global.h"
 #include "menu.h"
 #include "util.h"
+#include "ui.h"
 
 //I stole these from 3dbrew. Kill me.
 std::string descs[] =

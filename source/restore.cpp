@@ -8,7 +8,6 @@
 #include "archive.h"
 #include "slot.h"
 #include "global.h"
-#include "dir.h"
 #include "util.h"
 #include "ui.h"
 #include "sdpath.h"

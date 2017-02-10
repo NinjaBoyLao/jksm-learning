@@ -3,6 +3,7 @@
 
 #include <3ds.h>
 #include <string>
+#include <vector>
 
 #define seek_beg 0
 #define seek_cur 1
@@ -52,6 +53,25 @@ class fsFile
         FS_Archive arch;
         u64 fileSize = 0, offset = 0;
         unsigned int error;
+};
+
+class dirList
+{
+    public:
+        dirList(FS_Archive arch, const std::u16string p);
+        ~dirList();
+        void reassign(const std::u16string p);
+
+        unsigned count();
+
+        bool isDir(int i);
+        std::u16string retItem(int i);
+
+    private:
+        Handle d;
+        FS_Archive a;
+        std::u16string path;
+        std::vector<FS_DirectoryEntry> entry;
 };
 
 #endif // FILE_H

@@ -6,10 +6,11 @@
 #include "global.h"
 #include "util.h"
 #include "titledata.h"
-#include "dir.h"
+#include "file.h"
 #include "ui.h"
 #include "smdh.h"
 #include "archive.h"
+#include "menu.h"
 
 static Handle fsHandle;
 
@@ -187,7 +188,7 @@ bool runningUnder()
     u64 id;
     APT_GetProgramID(&id);
 
-    return id == 0x0004000002c23200 ? false : true;
+    return id != 0x0004000002c23200;
 }
 
 void deleteExtdata(const titleData dat)
@@ -272,23 +273,6 @@ void fsCommitData(FS_Archive arch)
     FSUSER_ControlArchive(arch, ARCHIVE_ACTION_COMMIT_SAVE_DATA, NULL, 0, NULL, 0);
 }
 
-Result FS_GetMediaType(FS_MediaType *m)
-{
-    Result res = 0;
-
-    u32 *cmdBuf = getThreadCommandBuffer();
-
-    cmdBuf[0] = IPC_MakeHeader(0x868, 0, 0);
-    cmdBuf[1] = 0;
-
-    if(R_FAILED(res = svcSendSyncRequest(fsHandle)))
-        return res;
-
-    *m = (FS_MediaType)cmdBuf[2];
-
-    return (Result)cmdBuf[1];
-}
-
 //I seriously can't remember why I put space in there. I don't like it anymore.
 const char16_t oldVerboten[] = { L' ', L'.', L',', L'/', L'\\', L'<', L'>', L':', L'"', L'|', L'?', L'*'};//12
 const char16_t newVerboten[] = { L'.', L',', L'/', L'\\', L'<', L'>', L':', L'"', L'|', L'?', L'*'};
@@ -345,10 +329,6 @@ std::u16string safeString(const std::u16string s)
 
     return ret;
 }
-
-extern void prepMain(), prepBackMenu(), prepSaveMenu();
-extern void prepExtMenu(), prepNandBackup(), prepSharedMenu();
-extern void prepSharedBackMenu(), prepExtras(), prepDevMenu();
 
 void prepareMenus()
 {

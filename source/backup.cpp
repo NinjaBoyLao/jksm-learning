@@ -5,7 +5,6 @@
 
 #include "global.h"
 #include "backup.h"
-#include "dir.h"
 #include "util.h"
 #include "slot.h"
 #include "ui.h"

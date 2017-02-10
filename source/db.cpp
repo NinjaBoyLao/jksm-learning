@@ -23,12 +23,7 @@ FILE *dbOpen(const char *path)
 //This is for writing the number of titles installed
 void dbWriteCount(FILE *db, u32 count, u8 rev)
 {
-    u8 tmp[2];
-
-    tmp[0] = count;
-    tmp[1] = count >> 8;
-
-    fwrite(tmp, 1, 2, db);
+    fwrite(&count, sizeof(uint16_t), 1, db);
 
     fputc(rev, db);
 }
@@ -38,8 +33,7 @@ void dbWriteCount(FILE *db, u32 count, u8 rev)
 u32 dbGetCount(FILE *db)
 {
     u32 ret = 0;
-    ret += fgetc(db);
-    ret += fgetc(db) << 8;
+    fread(&ret, sizeof(uint16_t), 1, db);
 
     fgetc(db);
 

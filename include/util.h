@@ -5,7 +5,6 @@
 #include <string>
 
 #include "titledata.h"
-#include "dir.h"
 
 //return converted strings using ctrulib's utfX_to_utfX
 std::u32string tou32(const std::u16string t);

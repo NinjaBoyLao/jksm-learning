@@ -50,4 +50,8 @@ class menu
         int x, y, selected, start, fc;
 };
 
+void prepMain(), prepBackMenu(), prepSaveMenu();
+void prepExtMenu(), prepNandBackup(), prepSharedMenu();
+void prepSharedBackMenu(), prepExtras(), prepDevMenu();
+
 #endif // MENU_H

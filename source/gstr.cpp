@@ -8,7 +8,7 @@
 #include "gstr.h"
 #include "global.h"
 #include "date.h"
-#include "textbox.h"
+#include "ui.h"
 
 std::string GetString(const char *hint)
 {

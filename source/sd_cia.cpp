@@ -10,7 +10,6 @@
 #include "global.h"
 #include "util.h"
 #include "ui.h"
-#include "button.h"
 #include "backup.h"
 #include "restore.h"
 
@@ -32,8 +31,31 @@ void prepSDSelect()
     titleMenu.autoVert();
 }
 
+void cartCheck()
+{
+    bool ins = false;
+    FSUSER_CardSlotIsInserted(&ins);
+    if(ins && sdTitle[0].media == MEDIATYPE_SD)
+    {
+        uint64_t cardId = 0;
+        AM_GetTitleList(NULL, MEDIATYPE_GAME_CARD, 1, &cardId);
+        titleData cardData;
+        if(cardData.init(cardId, MEDIATYPE_GAME_CARD))
+        {
+            sdTitle.insert(sdTitle.begin(), cardData);
+            prepSDSelect();
+        }
+    }
+    else if(!ins && sdTitle[0].media == MEDIATYPE_GAME_CARD)
+    {
+        sdTitle.erase(sdTitle.begin(), sdTitle.begin() + 1);
+        prepSDSelect();
+    }
+}
+
 void sdStartSelect()
 {
+    cartCheck();
     if(sdTitle.size() < 1)
     {
         showMessage("No installed titles were found!", "Nope...");
@@ -55,7 +77,7 @@ void sdStartSelect()
     {
         unsigned selected = titleMenu.getSelected();
         curTitle = &sdTitle[selected];
-        prevState = states::STATE_CIAMENU;
+        prevState = states::STATE_TITLEMENU;
         state = states::STATE_BACKUPMENU;
     }
     else if(help.released(pos))

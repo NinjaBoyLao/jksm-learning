@@ -8,7 +8,6 @@
 
 #include "font_ttf.h"
 #include "global.h"
-#include "textbox.h"
 #include "ui.h"
 #include "menu.h"
 #include "util.h"
@@ -40,15 +39,6 @@ void loadCol()
     fclose(colBin);
 }
 
-void changeBuffSize()
-{
-    FILE *bSize = fopen("buff_size", "rb");
-
-    fread(&buff_size, sizeof(u32), 1, bSize);
-
-    fclose(bSize);
-}
-
 void loadCfg()
 {
     FILE *config = fopen("config", "rb");
@@ -69,14 +59,11 @@ void createDir(const char *path)
 void sysInit()
 {
     romfsInit();
-
     mkdir("/JKSV", 0777);
     chdir("/JKSV");
 
     if(fexists("colBin"))
         loadCol();
-    if(fexists("buff_size"))
-        changeBuffSize();
     if(fexists("config"))
         loadCfg();
 
@@ -134,11 +121,11 @@ void sysExit()
     acExit();
     cfguExit();
     httpcExit();
-    romfsExit();
 
     freeImgs();
 
     sftd_free_font(font);
     sftd_fini();
     sf2d_fini();
+    romfsExit();
 }

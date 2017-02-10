@@ -15,17 +15,16 @@
 #define MODE_BOSS 3
 #define MODE_SHARED 4
 
-#define BUILD_DATE std::u32string(U"11-21-2016")
+#define BUILD_DATE std::u32string(U"2-9-2017")
 
 extern int state, prevState;
-extern titleData *curTitle;
 extern u8 sysLanguage;
+extern titleData *curTitle;
 
 enum states
 {
     STATE_MAINMENU,
-    STATE_CARTMENU,
-    STATE_CIAMENU,
+    STATE_TITLEMENU,
     STATE_BACKUPMENU,
     STATE_SAVEMENU,
     STATE_EXTMENU,
@@ -40,20 +39,13 @@ enum states
 void handleState();
 
 //buffer size
-extern unsigned buff_size;
+extern const unsigned buff_size;
 
 //This is the font used to print everything
 extern sftd_font *font;
 
-//This is for the bar you see at the top
-void topBarInit();
-void topBarExit();
-
 //SDMC Archive. Seems to write faster using this. Might just be me though
 extern FS_Archive sdArch;
-
-//This draws the bar you see at the top
-void drawTopBar(const std::u32string nfo);
 
 extern bool devMode, hbl, kill;
 //config

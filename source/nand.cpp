@@ -104,6 +104,7 @@ void nandBackup()
             case sysOpts::expSys:
                 if(openSysSave(&arch, *sysTitle))
                 {
+                    renameDir(*sysTitle);
                     createTitleDir(*sysTitle, MODE_SYSSAVE);
                     backupData(*sysTitle, arch, MODE_SYSSAVE, false);
                 }
@@ -117,6 +118,7 @@ void nandBackup()
             case sysOpts::expExt:
                 if(openExtdata(&arch, *sysTitle, true))
                 {
+                    renameDir(*sysTitle);
                     createTitleDir(*sysTitle, MODE_EXTDATA);
                     backupData(*sysTitle, arch, MODE_EXTDATA, false);
                 }
@@ -130,6 +132,7 @@ void nandBackup()
             case sysOpts::expBoss:
                 if(openBossExt(&arch, *sysTitle))
                 {
+                    renameDir(*sysTitle);
                     createTitleDir(*sysTitle, MODE_BOSS);
                     backupData(*sysTitle, arch, MODE_BOSS, false);
                 }

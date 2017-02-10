@@ -1,15 +1,14 @@
 #include <3ds.h>
 #include <sf2d.h>
 #include <sftd.h>
-#include <sfil.h>
 #include <stdio.h>
 #include <string>
+#include <string.h>
 
 #include "global.h"
 #include "date.h"
 #include "sys.h"
 #include "menu.h"
-#include "cart.h"
 #include "sd_cia.h"
 #include "titledata.h"
 #include "backupmenu.h"
@@ -23,21 +22,9 @@
 #include "dev.h"
 #include "ui.h"
 
-unsigned buff_size = 0x40000;
+unsigned const buff_size = 0x20000;
 
 sftd_font * font;
-
-static sf2d_texture * bar;
-
-void topBarInit()
-{
-    bar = sfil_load_PNG_file("romfs:/img/topBar.png", SF2D_PLACE_RAM);
-}
-
-void topBarExit()
-{
-    sf2d_free_texture(bar);
-}
 
 FS_Archive sdArch;
 
@@ -51,24 +38,11 @@ u8 clearColor[3] = {0, 0, 0};
 u8 selColor[3] = {0, 255, 0};
 u8 unSelColor[3] = {128, 128, 128};
 
-//draws the bar shown up top
-void drawTopBar(const std::u32string nfo)
-{
-    //the bar
-    sf2d_draw_texture_scale(bar, 0, 0, 25, 1);
-
-    //nfo is wide text, UTF32
-    sftd_draw_wtext(font, 0, 0, RGBA8(0, 0, 0, 255), 12, (wchar_t *)nfo.data());
-
-    //time
-    sftd_draw_text(font, 360, 0, RGBA8(0, 0, 0, 255), 12, RetTime().c_str());
-}
-
 //I needed a quick way to get most of it under one loop without having to completely rewrite it
 //This is what I came up with.
 int state = states::STATE_MAINMENU, prevState = states::STATE_MAINMENU;
-titleData *curTitle = NULL;
 u8 sysLanguage = 1;
+titleData *curTitle = NULL;
 
 void handleState()
 {
@@ -77,10 +51,7 @@ void handleState()
         case states::STATE_MAINMENU:
             mainMenu();
             break;
-        case states::STATE_CARTMENU:
-            cartManager();
-            break;
-        case states::STATE_CIAMENU:
+        case states::STATE_TITLEMENU:
             sdStartSelect();
             break;
         case states::STATE_BACKUPMENU:
@@ -125,7 +96,6 @@ void killApp(u32 up)
 
 enum mMenuOpts
 {
-    cart,
     cia,
     sys,
     shared,
@@ -140,8 +110,7 @@ static menu mMenu(136, 80, false, true);
 
 void prepMain()
 {
-    mMenu.addItem("Cartridge");
-    mMenu.addItem("SD/CIA");
+    mMenu.addItem("Titles");
     mMenu.addItem("System Titles");
     mMenu.addItem("Shared ExtData");
     mMenu.addItem("Refresh Games");
@@ -167,11 +136,8 @@ void mainMenu()
     {
         switch(mMenu.getSelected())
         {
-            case mMenuOpts::cart:
-                state = states::STATE_CARTMENU;
-                break;
             case mMenuOpts::cia:
-                state = states::STATE_CIAMENU;
+                state = states::STATE_TITLEMENU;
                 break;
             case mMenuOpts::sys:
                 state = states::STATE_NANDSELECT;

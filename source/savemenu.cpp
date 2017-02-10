@@ -62,6 +62,7 @@ void showSaveMenu()
             case saveOpts::expSav:
                 if(openSaveArch(&saveArch, *curTitle, true))
                 {
+                    renameDir(*curTitle);
                     createTitleDir(*curTitle, MODE_SAVE);
                     backupData(*curTitle, saveArch, MODE_SAVE, false);
                 }

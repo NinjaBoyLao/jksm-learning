@@ -58,6 +58,7 @@ void showExtMenu()
             case extOpts::expExt:
                 if(openExtdata(&extData, *curTitle, true))
                 {
+                    renameDir(*curTitle);
                     createTitleDir(*curTitle, MODE_EXTDATA);
                     backupData(*curTitle, extData, MODE_EXTDATA, false);
                 }

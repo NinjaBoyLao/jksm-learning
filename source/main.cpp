@@ -33,11 +33,7 @@ int main(int argc, const char * argv[])
     else
     {
         sdTitlesInit();
-        for(unsigned i = 0; i < sdTitle.size(); i++)
-            renameDir(sdTitle[i]);
         nandTitlesInit();
-        for(unsigned i = 0; i < nandTitle.size(); i++)
-            renameDir(nandTitle[i]);
 
         while(aptMainLoop() && !kill)
         {

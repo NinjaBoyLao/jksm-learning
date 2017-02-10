@@ -86,8 +86,11 @@ void loadFilterList()
 
         while(fgets(id, 16, load))
         {
-            u32 newID = strtoul(id, NULL, 16);
-            filterID.push_back(newID);
+            if(id[0] != '#')
+            {
+                u32 newID = strtoul(id, NULL, 16);
+                filterID.push_back(newID);
+            }
         }
 
         fclose(load);
