@@ -77,6 +77,7 @@ void sdStartSelect()
     {
         unsigned selected = titleMenu.getSelected();
         curTitle = &sdTitle[selected];
+        renameDir(sdTitle[selected]);
         prevState = states::STATE_TITLEMENU;
         state = states::STATE_BACKUPMENU;
     }

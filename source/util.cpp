@@ -113,7 +113,7 @@ void renameDir(const titleData t)
         newPath = getPath(MODE_EXTDATA) + t.nameSafe;
         renameU16(oldPath, newPath);
     }
-    else if(t.media == MEDIATYPE_SD)
+    else if(t.media == MEDIATYPE_SD || t.media == MEDIATYPE_GAME_CARD)
     {
         oldName = safeStringOld(t.name);
 
@@ -323,9 +323,14 @@ std::u16string safeString(const std::u16string s)
             ret += s[i];
     }
 
-    int lastChar = ret.length() - 1;
-    if(ret.c_str()[lastChar] == L' ')
-        ret.erase(lastChar, 1);
+    int i;
+    for(i = ret.length() - 1; i > 0; i--)
+    {
+        if(ret[i] != L' ')
+            break;
+    }
+
+    ret.erase(i + 1, ret.length() - i);
 
     return ret;
 }
