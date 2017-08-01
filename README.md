@@ -15,3 +15,5 @@ Due to the fact that I cannot keep up with homebrew releases anymore, I've decid
 in your JKSV folder as 0xXXXXXXXX.
 
 A big thanks to everyone who has worked on ctrulib.
+
+NinjaBoy: Currently working on getting this project updated a bit. Please don't build anything yourself out of this repo, it would probably not work right anyway.
